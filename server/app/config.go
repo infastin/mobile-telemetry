@@ -23,7 +23,7 @@ type (
 		User     string `env-required:"" env:"USER" yaml:"user" name:"db_user"`
 		Password string `env-required:"" env:"PASSWORD" yaml:"password" name:"db_password"`
 		Name     string `env-required:"" env:"NAME" yaml:"name" name:"db_name"`
-		SSLMode  string `env-required:"" env:"SSL_MODE" yaml:"sslmode" name:"db_sslmode"`
+		SSLMode  string `env-required:"" env:"SSLMODE" yaml:"sslmode" name:"db_sslmode"`
 	}
 
 	HTTPConfig struct {
