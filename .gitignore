@@ -1,0 +1,14 @@
+# IDE
+.idea
+.vscode
+.cache
+tags
+
+# Config
+.env
+.env.example
+
+# Directories
+/build/
+/data/
+**/logs/
