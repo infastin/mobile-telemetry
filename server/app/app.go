@@ -12,10 +12,6 @@ import (
 
 func Run() {
 	fx.New(
-		fx.Provide(NewLogger),
-		fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {
-			return &fxevent.ZapLogger{Logger: logger}
-		}),
 		fx.Provide(NewCLI),
 		fx.Provide(
 			fx.Annotate(
@@ -23,6 +19,10 @@ func Run() {
 				fx.ParamTags(`name:"config_path"`),
 			),
 		),
+		fx.Provide(NewLogger),
+		fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {
+			return &fxevent.ZapLogger{Logger: logger}
+		}),
 		fx.Provide(
 			dbRepo.New,
 			trackService.New,

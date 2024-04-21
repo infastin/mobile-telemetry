@@ -5,14 +5,34 @@ import (
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"go.uber.org/fx"
+	"go.uber.org/zap/zapcore"
 )
 
 type (
 	Config struct {
 		fx.Out
 
-		Database DatabaseConfig `env-prefix:"DB_" yaml:"db"`
-		HTTP     HTTPConfig     `env-prefix:"HTTP_" yaml:"http"`
+		Application ApplicationConfig `env-prefix:"APP_" yaml:"app"`
+		Logger      LoggerConfig      `env-prefix:"LOG_" yaml:"log"`
+		Database    DatabaseConfig    `env-prefix:"DB_" yaml:"db"`
+		HTTP        HTTPConfig        `env-prefix:"HTTP_" yaml:"http"`
+	}
+
+	ApplicationConfig struct {
+		fx.Out
+
+		Mode Mode `env-default:"debug" yaml:"mode" name:"app_mode"`
+	}
+
+	LoggerConfig struct {
+		fx.Out
+
+		Level struct {
+			fx.Out
+
+			Debug   zapcore.Level `env-default:"debug" yaml:"debug" name:"log_level_debug"`
+			Release zapcore.Level `env-default:"info" yaml:"release" name:"log_level_release"`
+		} `env-prefix:"LEVEL_" yaml:"level"`
 	}
 
 	DatabaseConfig struct {
@@ -45,6 +65,8 @@ func NewConfig(configPath string) (cfg Config, err error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("could not read envvars: %w", err)
 	}
+
+	SetMode(cfg.Application.Mode)
 
 	return cfg, nil
 }

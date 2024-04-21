@@ -8,6 +8,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type LoggerMiddleware struct {
@@ -29,6 +30,8 @@ func (m *LoggerMiddleware) Handle(next echo.HandlerFunc) echo.HandlerFunc {
 		err := next(c)
 		if err != nil {
 			c.Error(err)
+		} else if m.lg.Level() > zapcore.InfoLevel {
+			return nil
 		}
 
 		elapsed := time.Since(start)
