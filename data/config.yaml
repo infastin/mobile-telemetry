@@ -1,0 +1,18 @@
+app:
+  mode: debug
+
+log:
+  level:
+    debug: debug
+    release: warn
+
+db:
+  host: localhost
+  port: 5432
+  user: root
+  password: root
+  name: telemetry
+  sslmode: disable
+
+http:
+  port: 8080
