@@ -1,5 +1,5 @@
 BUILD_DIR=build
-ENT_DIR=server/service/repo/db/entimpl/ent
+SQLC_DIR=server/service/repo/db/sqlcimpl/sqlc
 MODULE=mobile-telemetry
 
 deps:
@@ -19,10 +19,6 @@ lint:
 	golangci-lint run
 .PHONY: lint
 
-entdesc:
-	go run -mod=mod entgo.io/ent/cmd/ent describe ./$(ENT_DIR)/schema
-.PHONY: entdesc
-
-entgen:
-	go run -mod=mod entgo.io/ent/cmd/ent generate ./$(ENT_DIR)/schema
-.PHONY: entgen
+sqlc:
+	cd $(SQLC_DIR) && sqlc generate
+.PHONY: sqlc

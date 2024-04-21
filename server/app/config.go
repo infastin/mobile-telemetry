@@ -21,7 +21,7 @@ type (
 	ApplicationConfig struct {
 		fx.Out
 
-		Mode Mode `env-default:"debug" yaml:"mode" name:"app_mode"`
+		Mode Mode `env-default:"debug" env:"MODE" yaml:"mode" name:"app_mode"`
 	}
 
 	LoggerConfig struct {
@@ -30,8 +30,8 @@ type (
 		Level struct {
 			fx.Out
 
-			Debug   zapcore.Level `env-default:"debug" yaml:"debug" name:"log_level_debug"`
-			Release zapcore.Level `env-default:"info" yaml:"release" name:"log_level_release"`
+			Debug   zapcore.Level `env-default:"debug" env:"DEBUG" yaml:"debug" name:"log_level_debug"`
+			Release zapcore.Level `env-default:"info" env:"RELEASE" yaml:"release" name:"log_level_release"`
 		} `env-prefix:"LEVEL_" yaml:"level"`
 	}
 

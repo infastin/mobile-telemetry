@@ -3,7 +3,7 @@ package app
 import (
 	"mobile-telemetry/server/controller/http"
 	trackService "mobile-telemetry/server/service/impl/track"
-	dbRepo "mobile-telemetry/server/service/repo/db/entimpl"
+	dbRepo "mobile-telemetry/server/service/repo/db/sqlcimpl"
 
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
