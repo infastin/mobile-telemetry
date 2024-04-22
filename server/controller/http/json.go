@@ -1,19 +1,18 @@
 package http
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 	"github.com/labstack/echo/v4"
 )
 
 type JSONSerializer struct{}
 
 func (JSONSerializer) Serialize(ctx echo.Context, v any, indent string) error {
-	enc := jsoniter.ConfigCompatibleWithStandardLibrary.NewEncoder(ctx.Response())
+	enc := json.NewEncoder(ctx.Response())
 	if indent != "" {
 		enc.SetIndent("", indent)
 	}
@@ -21,7 +20,7 @@ func (JSONSerializer) Serialize(ctx echo.Context, v any, indent string) error {
 }
 
 func (JSONSerializer) Deserialize(ctx echo.Context, v any) error {
-	err := jsoniter.ConfigCompatibleWithStandardLibrary.NewDecoder(ctx.Request().Body).Decode(v)
+	err := json.NewDecoder(ctx.Request().Body).Decode(v)
 	if ute := (*json.UnmarshalTypeError)(nil); errors.As(err, &ute) {
 		return echo.NewHTTPError(
 			http.StatusBadRequest,

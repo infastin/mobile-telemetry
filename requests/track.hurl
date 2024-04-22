@@ -1,6 +1,7 @@
 POST http://localhost:8080/track
 {
 	"info": {
+		"user_id": "989e27fc-ab6a-4d1e-9581-aef237b5421a",
 		"device": {
 			"manufacturer": "Apple",
 			"model": "iPhone X",
