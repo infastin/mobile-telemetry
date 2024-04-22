@@ -16,7 +16,7 @@ func (Validator) Validate(ptr any) error {
 }
 
 func init() {
-	validate.AddValidator("notEmptyUUID", func(id uuid.UUID) bool {
+	validate.AddValidator("required_uuid", func(id uuid.UUID) bool {
 		return id != uuid.UUID{}
 	})
 }
