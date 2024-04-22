@@ -1,6 +1,9 @@
 package http
 
-import "github.com/gookit/validate"
+import (
+	"github.com/google/uuid"
+	"github.com/gookit/validate"
+)
 
 type Validator struct{}
 
@@ -10,4 +13,10 @@ func (Validator) Validate(ptr any) error {
 		return v.Errors
 	}
 	return nil
+}
+
+func init() {
+	validate.AddValidator("notEmptyUUID", func(id uuid.UUID) bool {
+		return id != uuid.UUID{}
+	})
 }

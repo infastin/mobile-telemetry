@@ -31,8 +31,8 @@ func NewTrackHandler(params TrackHandlerParams) *TrackHandler {
 }
 
 type TrackRequest struct {
-	Info GeneralInfo `json:"info"`
-	Data []Telemetry `json:"data"`
+	Info GeneralInfo `json:"info" validate:"required"`
+	Data []Telemetry `json:"data" validate:"required"`
 }
 
 func (h *TrackHandler) Handle(ctx echo.Context) error {
