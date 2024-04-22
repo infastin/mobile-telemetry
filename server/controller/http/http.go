@@ -31,7 +31,6 @@ type ServerParams struct {
 
 func New(lc fx.Lifecycle, shutdowner fx.Shutdowner, params ServerParams) *Server {
 	e := echo.New()
-	e.Validator = Validator{}
 
 	e.Use(params.LoggerMiddleware.Handle)
 	e.Use(NewRecoverMiddleware)

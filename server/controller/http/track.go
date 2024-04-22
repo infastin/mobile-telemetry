@@ -5,6 +5,7 @@ import (
 	"mobile-telemetry/server/service"
 	"net/http"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/labstack/echo/v4"
 
 	"go.uber.org/fx"
@@ -31,8 +32,15 @@ func NewTrackHandler(params TrackHandlerParams) *TrackHandler {
 }
 
 type TrackRequest struct {
-	Info GeneralInfo `json:"info" validate:"required"`
-	Data []Telemetry `json:"data" validate:"required"`
+	Info GeneralInfo `json:"info"`
+	Data []Telemetry `json:"data"`
+}
+
+func (tr TrackRequest) Validate() error {
+	return validation.ValidateStruct(&tr,
+		validation.Field(&tr.Info, validation.Required),
+		validation.Field(&tr.Data, validation.Required),
+	)
 }
 
 func (h *TrackHandler) Handle(ctx echo.Context) error {
@@ -41,7 +49,7 @@ func (h *TrackHandler) Handle(ctx echo.Context) error {
 		return err
 	}
 
-	if err := ctx.Validate(&req); err != nil {
+	if err := req.Validate(); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
