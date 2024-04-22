@@ -7,7 +7,7 @@ import (
 )
 
 type GeneralInfo struct {
-	UserID     uuid.UUID `json:"user_id" validate:"required_uuid"`
+	UserID     uuid.UUID `json:"user_id" validate:"requiredUUID"`
 	Device     Device    `json:"device" validate:"required"`
 	AppVersion string    `json:"app_version" validate:"required"`
 }
