@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mobile-telemetry/server/app"
 	"net/http"
 	"strconv"
 	"time"
+
+	_ "net/http/pprof"
 
 	"github.com/labstack/echo/v4"
 
@@ -38,6 +41,9 @@ func New(lc fx.Lifecycle, shutdowner fx.Shutdowner, params ServerParams) *Server
 	e.Use(NewRecoverMiddleware)
 
 	e.POST("/track", params.TrackHandler.Handle)
+	if app.GetMode() == app.DebugMode {
+		e.GET("/debug/*", echo.WrapHandler(http.DefaultServeMux))
+	}
 
 	server := &http.Server{
 		Addr:    "0.0.0.0:" + strconv.Itoa(params.Port),
