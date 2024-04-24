@@ -2,9 +2,10 @@ package impl
 
 import (
 	"context"
-	"encoding/json"
 	"mobile-telemetry/server/service/model"
 	"mobile-telemetry/server/service/repo/db/sqlcimpl/sqlc"
+
+	"github.com/goccy/go-json"
 )
 
 func (db *dbRepo) AddTelemetries(ctx context.Context, telemetries []model.Telemetry) (err error) {
