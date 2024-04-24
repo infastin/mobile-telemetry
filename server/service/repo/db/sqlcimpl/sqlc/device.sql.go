@@ -36,12 +36,12 @@ func (q *Queries) FindDevice(ctx context.Context, arg FindDeviceParams) (Device,
 	return i, err
 }
 
-const upserDevice = `-- name: UpserDevice :execresult
+const upsertDevice = `-- name: UpsertDevice :execresult
 INSERT INTO devices (manufacturer, model, build_number, os, screen_width, screen_height) VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT DO NOTHING
 `
 
-type UpserDeviceParams struct {
+type UpsertDeviceParams struct {
 	Manufacturer string
 	Model        string
 	BuildNumber  string
@@ -50,8 +50,8 @@ type UpserDeviceParams struct {
 	ScreenHeight int32
 }
 
-func (q *Queries) UpserDevice(ctx context.Context, arg UpserDeviceParams) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, upserDevice,
+func (q *Queries) UpsertDevice(ctx context.Context, arg UpsertDeviceParams) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, upsertDevice,
 		arg.Manufacturer,
 		arg.Model,
 		arg.BuildNumber,

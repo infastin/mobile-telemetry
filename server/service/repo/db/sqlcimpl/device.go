@@ -7,8 +7,8 @@ import (
 )
 
 func (db *dbRepo) AddDeviceIfNotExists(ctx context.Context, device *model.Device) (id int, err error) {
-	_, err = db.queries.UpserDevice(ctx,
-		sqlc.UpserDeviceParams{
+	_, err = db.queries.UpsertDevice(ctx,
+		sqlc.UpsertDeviceParams{
 			Manufacturer: device.Manufacturer,
 			Model:        device.Model,
 			BuildNumber:  device.BuildNumber,

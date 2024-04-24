@@ -1,4 +1,4 @@
--- name: UpserDevice :execresult
+-- name: UpsertDevice :execresult
 INSERT INTO devices (manufacturer, model, build_number, os, screen_width, screen_height) VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT DO NOTHING;
 

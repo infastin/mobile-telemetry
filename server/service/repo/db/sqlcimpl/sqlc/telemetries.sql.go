@@ -6,6 +6,8 @@
 package sqlc
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -16,5 +18,5 @@ type InsertTelemetriesBulkParams struct {
 	AppVersion string
 	Action     string
 	Data       []byte
-	Timestamp  interface{}
+	Timestamp  time.Time
 }

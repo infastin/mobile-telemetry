@@ -5,6 +5,8 @@
 package sqlc
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -26,7 +28,7 @@ type Telemetry struct {
 	OsVersion  string
 	Action     string
 	Data       []byte
-	Timestamp  interface{}
+	Timestamp  time.Time
 }
 
 type User struct {
