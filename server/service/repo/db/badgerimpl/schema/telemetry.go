@@ -7,7 +7,6 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/google/uuid"
-	"github.com/vmihailenco/msgpack/v5"
 )
 
 const TelemetryPrefix string = "telemetry"
@@ -35,21 +34,8 @@ func TelemetryKey(userID uuid.UUID, deviceID uint64) []byte {
 	return b.Bytes()
 }
 
-type TelemetryData struct {
-	OSVersion  string
-	AppVersion string
-	Action     string
-	Data       map[string]any
-	Timestamp  time.Time
-}
-
 func MarshalTelemetryData(data *TelemetryData) ([]byte, error) {
-	var b bytes.Buffer
-	err := msgpack.NewEncoder(&b).Encode(data)
-	if err != nil {
-		return nil, err
-	}
-	return b.Bytes(), nil
+	return data.MarshalMsg(nil)
 }
 
 func TelemetryEntry(telemetry *Telemetry) (*badger.Entry, error) {

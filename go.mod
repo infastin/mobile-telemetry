@@ -10,7 +10,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/labstack/echo/v4 v4.12.0
-	github.com/vmihailenco/msgpack/v5 v5.4.1
+	github.com/tinylib/msgp v1.1.9
 	go.uber.org/fx v1.21.0
 	go.uber.org/zap v1.27.0
 )
@@ -26,8 +26,8 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/flatbuffers v1.12.1 // indirect
 	github.com/klauspost/compress v1.12.3 // indirect
+	github.com/philhofer/fwd v1.1.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.opencensus.io v0.22.5 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )

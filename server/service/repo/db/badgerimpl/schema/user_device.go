@@ -6,7 +6,6 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/google/uuid"
-	"github.com/vmihailenco/msgpack/v5"
 )
 
 const UserDevicePrefix string = "user_device"
@@ -29,15 +28,8 @@ func UserDeviceKey(userID uuid.UUID, devID uint64) []byte {
 	return b.Bytes()
 }
 
-type UserDeviceData struct{}
-
 func MarshalUserDeviceData(data *UserDeviceData) ([]byte, error) {
-	var b bytes.Buffer
-	err := msgpack.NewEncoder(&b).Encode(data)
-	if err != nil {
-		return nil, err
-	}
-	return b.Bytes(), nil
+	return data.MarshalMsg(nil)
 }
 
 func UserDeviceEntry(userDevice *UserDevice) (*badger.Entry, error) {

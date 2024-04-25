@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/vmihailenco/msgpack/v5"
 )
 
 const DevicePrefix string = "device"
@@ -31,22 +30,8 @@ func DeviceKey(id uint64) []byte {
 	return b.Bytes()
 }
 
-type DeviceData struct {
-	Manufacturer string
-	Model        string
-	BuildNumber  string
-	OS           string
-	ScreenWidth  uint32
-	ScreenHeight uint32
-}
-
 func MarshalDeviceData(data *DeviceData) ([]byte, error) {
-	var b bytes.Buffer
-	err := msgpack.NewEncoder(&b).Encode(data)
-	if err != nil {
-		return nil, err
-	}
-	return b.Bytes(), nil
+	return data.MarshalMsg(nil)
 }
 
 func DeviceEntry(device *Device) (*badger.Entry, error) {

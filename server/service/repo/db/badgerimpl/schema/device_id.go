@@ -4,7 +4,6 @@ import (
 	"bytes"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/vmihailenco/msgpack/v5"
 )
 
 const DeviceIDPrefix string = "device_id"
@@ -31,21 +30,12 @@ func DeviceIDKey(manufacturer, model, buildNumber string) []byte {
 	return b.Bytes()
 }
 
-type DeviceIDData struct {
-	ID uint64
-}
-
 func MarshalDeviceIDData(data *DeviceIDData) ([]byte, error) {
-	var b bytes.Buffer
-	err := msgpack.NewEncoder(&b).Encode(data)
-	if err != nil {
-		return nil, err
-	}
-	return b.Bytes(), nil
+	return data.MarshalMsg(nil)
 }
 
 func UnmarshalDeviceIDData(b []byte) (data DeviceIDData, err error) {
-	err = msgpack.Unmarshal(b, &data)
+	_, err = data.UnmarshalMsg(b)
 	if err != nil {
 		return DeviceIDData{}, err
 	}

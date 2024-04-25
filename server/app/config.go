@@ -13,8 +13,8 @@ import (
 type Config struct {
 	fx.Out
 
-	Logger   LoggerConfig   `env-prefix:"LOG_" yaml:"logger"`
-	Database DatabaseConfig `env-prefix:"DB_" yaml:"database"`
+	Logger   LoggerConfig   `env-prefix:"LOGGER_" yaml:"logger"`
+	Database DatabaseConfig `env-prefix:"DATABASE_" yaml:"database"`
 	HTTP     HTTPConfig     `env-prefix:"HTTP_" yaml:"http"`
 }
 
@@ -29,7 +29,7 @@ func (cfg Config) Validate() error {
 type LoggerConfig struct {
 	fx.Out
 
-	Level zapcore.Level `env:"DEBUG" yaml:"level" name:"logger_level"`
+	Level zapcore.Level `env:"LEVEL" yaml:"level" name:"logger_level"`
 }
 
 func (cfg LoggerConfig) Validate() error {

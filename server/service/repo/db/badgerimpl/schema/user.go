@@ -6,7 +6,6 @@ import (
 
 	"github.com/dgraph-io/badger/v4"
 	"github.com/google/uuid"
-	"github.com/vmihailenco/msgpack/v5"
 )
 
 const UserPrefix string = "user"
@@ -26,15 +25,8 @@ func UserKey(id uuid.UUID) []byte {
 	return b.Bytes()
 }
 
-type UserData struct{}
-
 func MarshalUserData(data *UserData) ([]byte, error) {
-	var b bytes.Buffer
-	err := msgpack.NewEncoder(&b).Encode(data)
-	if err != nil {
-		return nil, err
-	}
-	return b.Bytes(), nil
+	return data.MarshalMsg(nil)
 }
 
 func UserEntry(user *User) (*badger.Entry, error) {

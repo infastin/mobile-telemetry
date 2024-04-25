@@ -103,7 +103,7 @@ function init()
     ["Content-Type"] = "application/json",
   }
 
-  for _ = 1, 1000 do
+  for _ = 1, 10000 do
     local body = {
       info = random_info(),
       data = {},
