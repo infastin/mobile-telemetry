@@ -2,62 +2,104 @@ package app
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/ilyakaznacheev/cleanenv"
 	"go.uber.org/fx"
 	"go.uber.org/zap/zapcore"
 )
 
-type (
-	Config struct {
-		fx.Out
+type Config struct {
+	fx.Out
 
-		Application ApplicationConfig `env-prefix:"APP_" yaml:"app"`
-		Logger      LoggerConfig      `env-prefix:"LOG_" yaml:"log"`
-		Database    DatabaseConfig    `env-prefix:"DB_" yaml:"db"`
-		HTTP        HTTPConfig        `env-prefix:"HTTP_" yaml:"http"`
-	}
+	Logger   LoggerConfig   `env-prefix:"LOG_" yaml:"logger"`
+	Database DatabaseConfig `env-prefix:"DB_" yaml:"database"`
+	HTTP     HTTPConfig     `env-prefix:"HTTP_" yaml:"http"`
+}
 
-	ApplicationConfig struct {
-		fx.Out
+func (cfg Config) Validate() error {
+	return validation.ValidateStruct(&cfg,
+		validation.Field(&cfg.Logger),
+		validation.Field(&cfg.Database),
+		validation.Field(&cfg.HTTP),
+	)
+}
 
-		Mode Mode `env-default:"debug" env:"MODE" yaml:"mode" name:"app_mode"`
-	}
+type LoggerConfig struct {
+	fx.Out
 
-	LoggerConfig struct {
-		fx.Out
+	Level zapcore.Level `env:"DEBUG" yaml:"level" name:"logger_level"`
+}
 
-		Level struct {
-			fx.Out
+func (cfg LoggerConfig) Validate() error {
+	return validation.ValidateStruct(&cfg,
+		validation.Field(&cfg.Level,
+			validation.In(zapcore.DebugLevel, zapcore.InfoLevel, zapcore.WarnLevel, zapcore.ErrorLevel),
+		),
+	)
+}
 
-			Debug   zapcore.Level `env-default:"debug" env:"DEBUG" yaml:"debug" name:"log_level_debug"`
-			Release zapcore.Level `env-default:"info" env:"RELEASE" yaml:"release" name:"log_level_release"`
-		} `env-prefix:"LEVEL_" yaml:"level"`
-	}
+type DatabaseConfig struct {
+	fx.Out
 
-	DatabaseConfig struct {
-		fx.Out
+	Directory string `env:"DIRECTORY" yaml:"directory" name:"db_directory"`
+}
 
-		Host     string `env-required:"" env:"HOST" yaml:"host" name:"db_host"`
-		Port     int    `env-required:"" env:"PORT" yaml:"port" name:"db_port"`
-		User     string `env-required:"" env:"USER" yaml:"user" name:"db_user"`
-		Password string `env-required:"" env:"PASSWORD" yaml:"password" name:"db_password"`
-		Name     string `env-required:"" env:"NAME" yaml:"name" name:"db_name"`
-		SSLMode  string `env-required:"" env:"SSLMODE" yaml:"sslmode" name:"db_sslmode"`
-	}
+func (cfg DatabaseConfig) Validate() error {
+	return validation.ValidateStruct(&cfg,
+		validation.Field(&cfg.Directory, validation.Required),
+	)
+}
 
-	HTTPConfig struct {
-		fx.Out
+type HTTPConfig struct {
+	fx.Out
 
-		Port int `env-required:"" env:"PORT" yaml:"port" name:"http_port"`
-	}
-)
+	Port int `env:"PORT" yaml:"port" name:"http_port"`
+}
+
+func (cfg HTTPConfig) Validate() error {
+	return validation.ValidateStruct(&cfg,
+		validation.Field(&cfg.Port,
+			validation.Required,
+			validation.Min(0).Exclusive(),
+			validation.Max(65536).Exclusive(),
+		),
+	)
+}
 
 func NewConfig(configPath string) (cfg Config, err error) {
+	mode, ok := os.LookupEnv("APP_MODE")
+	if !ok {
+		mode = DebugMode
+	} else if !ValidMode(mode) {
+		return Config{}, fmt.Errorf(
+			`invalid application mode "%s", expected one of "%s", "%s", "%s"`,
+			mode, ReleaseMode, DebugMode, TestMode,
+		)
+	}
+
+	SetMode(mode)
+
 	if configPath != "" {
-		err = cleanenv.ReadConfig(configPath, &cfg)
+		var configs struct {
+			Release Config `yaml:"release"`
+			Debug   Config `yaml:"debug"`
+			Test    Config `yaml:"test"`
+		}
+
+		err = cleanenv.ReadConfig(configPath, &configs)
 		if err != nil {
 			return Config{}, fmt.Errorf("could not read config: %w", err)
+		}
+
+		switch mode {
+		case ReleaseMode:
+			cfg = configs.Release
+		case DebugMode:
+			cfg = configs.Debug
+		case TestMode:
+			cfg = configs.Test
 		}
 	}
 
@@ -66,7 +108,15 @@ func NewConfig(configPath string) (cfg Config, err error) {
 		return Config{}, fmt.Errorf("could not read envvars: %w", err)
 	}
 
-	SetMode(cfg.Application.Mode)
+	validation.ErrorTag = "yaml"
+	defer func() {
+		validation.ErrorTag = "json"
+	}()
+
+	err = cfg.Validate()
+	if err != nil {
+		return Config{}, fmt.Errorf("invalid config: %w", err)
+	}
 
 	return cfg, nil
 }

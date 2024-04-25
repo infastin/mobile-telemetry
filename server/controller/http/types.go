@@ -16,7 +16,7 @@ type GeneralInfo struct {
 func (info GeneralInfo) Validate() error {
 	return validation.ValidateStruct(&info,
 		validation.Field(&info.UserID, validation.By(ValidUUID)),
-		validation.Field(&info.Device, validation.Required),
+		validation.Field(&info.Device),
 		validation.Field(&info.AppVersion, validation.Required),
 	)
 }

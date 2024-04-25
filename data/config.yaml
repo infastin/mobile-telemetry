@@ -1,18 +1,15 @@
-app:
-  mode: debug
+debug:
+  logger:
+    level: debug
+  database:
+    directory: data/badger/
+  http:
+    port: 8080
 
-log:
-  level:
-    debug: debug
-    release: warn
-
-db:
-  host: localhost
-  port: 5432
-  user: root
-  password: root
-  name: telemetry
-  sslmode: disable
-
-http:
-  port: 8080
+release:
+  logger:
+    level: warn
+  database:
+    directory: data/badger/
+  http:
+    port: 8080

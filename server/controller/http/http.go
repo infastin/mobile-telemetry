@@ -41,7 +41,7 @@ func New(lc fx.Lifecycle, shutdowner fx.Shutdowner, params ServerParams) *Server
 	e.Use(NewRecoverMiddleware)
 
 	e.POST("/track", params.TrackHandler.Handle)
-	if app.GetMode() == app.DebugMode {
+	if app.Mode() == app.DebugMode {
 		e.GET("/debug/*", echo.WrapHandler(http.DefaultServeMux))
 	}
 
