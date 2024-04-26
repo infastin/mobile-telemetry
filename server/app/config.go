@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/infastin/go-validation"
+	"github.com/infastin/go-validation/is/int"
 	"go.uber.org/fx"
 	"go.uber.org/zap/zapcore"
 )
@@ -19,10 +20,10 @@ type Config struct {
 }
 
 func (cfg Config) Validate() error {
-	return validation.ValidateStruct(&cfg,
-		validation.Field(&cfg.Logger),
-		validation.Field(&cfg.Database),
-		validation.Field(&cfg.HTTP),
+	return validation.All(
+		validation.Ptr(&cfg.Logger, "logger").With(validation.Custom),
+		validation.Ptr(&cfg.Database, "database").With(validation.Custom),
+		validation.Ptr(&cfg.HTTP, "http").With(validation.Custom),
 	)
 }
 
@@ -33,9 +34,9 @@ type LoggerConfig struct {
 }
 
 func (cfg LoggerConfig) Validate() error {
-	return validation.ValidateStruct(&cfg,
-		validation.Field(&cfg.Level,
-			validation.In(zapcore.DebugLevel, zapcore.InfoLevel, zapcore.WarnLevel, zapcore.ErrorLevel),
+	return validation.All(
+		validation.Comparable(cfg.Level, "level").In(
+			zapcore.DebugLevel, zapcore.InfoLevel, zapcore.WarnLevel, zapcore.ErrorLevel,
 		),
 	)
 }
@@ -47,8 +48,8 @@ type DatabaseConfig struct {
 }
 
 func (cfg DatabaseConfig) Validate() error {
-	return validation.ValidateStruct(&cfg,
-		validation.Field(&cfg.Directory, validation.Required),
+	return validation.All(
+		validation.String(cfg.Directory, "directory").Required(true),
 	)
 }
 
@@ -59,12 +60,8 @@ type HTTPConfig struct {
 }
 
 func (cfg HTTPConfig) Validate() error {
-	return validation.ValidateStruct(&cfg,
-		validation.Field(&cfg.Port,
-			validation.Required,
-			validation.Min(0).Exclusive(),
-			validation.Max(65536).Exclusive(),
-		),
+	return validation.All(
+		validation.Number(cfg.Port, "port").Required(true).With(isint.Port),
 	)
 }
 
@@ -107,11 +104,6 @@ func NewConfig(configPath string) (cfg Config, err error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("could not read envvars: %w", err)
 	}
-
-	validation.ErrorTag = "yaml"
-	defer func() {
-		validation.ErrorTag = "json"
-	}()
 
 	err = cfg.Validate()
 	if err != nil {

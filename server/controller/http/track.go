@@ -5,7 +5,7 @@ import (
 	"mobile-telemetry/server/service"
 	"net/http"
 
-	"github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/infastin/go-validation"
 	"github.com/labstack/echo/v4"
 
 	"go.uber.org/fx"
@@ -36,10 +36,10 @@ type TrackRequest struct {
 	Data []Telemetry `json:"data"`
 }
 
-func (tr TrackRequest) Validate() error {
-	return validation.ValidateStruct(&tr,
-		validation.Field(&tr.Info),
-		validation.Field(&tr.Data, validation.NotNil),
+func (tr *TrackRequest) Validate() error {
+	return validation.All(
+		validation.Ptr(&tr.Info, "info").With(validation.Custom),
+		validation.Slice(tr.Data, "data").Required(true).ValuesPtrWith(validation.Custom),
 	)
 }
 

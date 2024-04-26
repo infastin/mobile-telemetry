@@ -5,7 +5,6 @@ go 1.22.2
 require (
 	github.com/alecthomas/kong v0.9.0
 	github.com/dgraph-io/badger/v4 v4.2.0
-	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/google/uuid v1.3.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.5.5
@@ -35,6 +34,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/goccy/go-json v0.10.2
+	github.com/infastin/go-validation v0.0.0-20240426144546-003c6fc0eb70
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect

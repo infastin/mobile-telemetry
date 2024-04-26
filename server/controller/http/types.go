@@ -3,8 +3,8 @@ package http
 import (
 	"time"
 
-	"github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
+	"github.com/infastin/go-validation"
 )
 
 type GeneralInfo struct {
@@ -13,11 +13,11 @@ type GeneralInfo struct {
 	AppVersion string    `json:"app_version"`
 }
 
-func (info GeneralInfo) Validate() error {
-	return validation.ValidateStruct(&info,
-		validation.Field(&info.UserID, validation.By(ValidUUID)),
-		validation.Field(&info.Device),
-		validation.Field(&info.AppVersion, validation.Required),
+func (info *GeneralInfo) Validate() error {
+	return validation.All(
+		validation.Comparable(info.UserID, "user_id").Required(true),
+		validation.Ptr(&info.Device, "device").With(validation.Custom),
+		validation.String(info.AppVersion, "app_version").Required(true),
 	)
 }
 
@@ -31,14 +31,14 @@ type Device struct {
 	ScreenHeight uint32 `json:"screen_height"`
 }
 
-func (d Device) Validate() error {
-	return validation.ValidateStruct(&d,
-		validation.Field(&d.Manufacturer, validation.Required),
-		validation.Field(&d.Model, validation.Required),
-		validation.Field(&d.BuildNumber, validation.Required),
-		validation.Field(&d.OS, validation.Required),
-		validation.Field(&d.ScreenWidth, validation.Required),
-		validation.Field(&d.ScreenHeight, validation.Required),
+func (d *Device) Validate() error {
+	return validation.All(
+		validation.String(d.Manufacturer, "manufacturer").Required(true),
+		validation.String(d.Model, "model").Required(true),
+		validation.String(d.BuildNumber, "build_number").Required(true),
+		validation.String(d.OS, "os").Required(true),
+		validation.Number(d.ScreenWidth, "screen_width").Required(true),
+		validation.Number(d.ScreenHeight, "screen_height").Required(true),
 	)
 }
 
@@ -49,9 +49,9 @@ type Telemetry struct {
 }
 
 func (t Telemetry) Validate() error {
-	return validation.ValidateStruct(&t,
-		validation.Field(&t.Action, validation.Required),
-		validation.Field(&t.Data, validation.NotNil),
-		validation.Field(&t.Timestamp, validation.Required),
+	return validation.All(
+		validation.String(t.Action, "action").Required(true),
+		validation.Map(t.Data, "data").NotNil(true),
+		validation.Time(t.Timestamp, "timestamp").Required(true),
 	)
 }

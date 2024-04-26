@@ -15,7 +15,6 @@ import (
 type dbRepo struct {
 	lg *zap.Logger
 	db *badger.DB
-	tx *badger.Txn
 
 	deviceSeq *badger.Sequence
 }
@@ -43,7 +42,6 @@ func New(lc fx.Lifecycle, cfg Config) (database.Repo, error) {
 	repo := &dbRepo{
 		lg:        cfg.Logger,
 		db:        db,
-		tx:        nil,
 		deviceSeq: deviceSeq,
 	}
 
