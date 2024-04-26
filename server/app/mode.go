@@ -9,11 +9,10 @@ const (
 var appMode string
 
 func SetMode(mode string) {
-	if ValidMode(mode) {
-		appMode = mode
-	} else {
+	if !ValidMode(mode) {
 		panic(`invalid application mode "` + mode + `"`)
 	}
+	appMode = mode
 }
 
 func Mode() string {
