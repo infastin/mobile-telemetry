@@ -1,5 +1,4 @@
 BUILD_DIR=build
-SQLC_DIR=server/service/repo/db/sqlcimpl/sqlc
 MSGP_DIR=server/service/repo/db/badgerimpl/schema
 MODULE=mobile-telemetry
 
@@ -23,7 +22,3 @@ lint:
 msgp:
 	go generate ./$(MSGP_DIR)
 .PHONY: msgp
-
-sqlc:
-	cd $(SQLC_DIR) && sqlc generate
-.PHONY: sqlc

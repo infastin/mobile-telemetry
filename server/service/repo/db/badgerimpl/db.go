@@ -73,19 +73,3 @@ func (db *dbRepo) Close() error {
 	_ = db.deviceSeq.Release()
 	return db.db.Close()
 }
-
-func (db *dbRepo) Atomic(ctx context.Context, callback database.AtomicCallback) (err error) {
-	return callback(db)
-}
-
-func (db *dbRepo) User() database.UserRepo {
-	return db
-}
-
-func (db *dbRepo) Device() database.DeviceRepo {
-	return db
-}
-
-func (db *dbRepo) Telemetry() database.TelemetryRepo {
-	return db
-}

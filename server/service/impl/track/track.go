@@ -30,39 +30,37 @@ func New(params TrackServiceParams) service.TrackService {
 }
 
 func (ts *trackService) AddTelemetry(ctx context.Context, params service.AddTelemetryParams) (err error) {
-	return ts.db.Atomic(ctx, func(tx db.Repo) error {
-		userID, err := tx.User().AddUserIfNotExists(ctx, params.User)
-		if err != nil {
-			return err
-		}
+	userID, err := ts.db.AddUserIfNotExists(ctx, params.User)
+	if err != nil {
+		return err
+	}
 
-		deviceID, err := tx.Device().AddDeviceIfNotExists(ctx,
-			&model.Device{
-				UserID:       params.User.ID,
-				Manufacturer: params.Device.Manufacturer,
-				Model:        params.Device.Model,
-				BuildNumber:  params.Device.BuildNumber,
-				OS:           params.Device.OS,
-				ScreenWidth:  params.Device.ScreenWidth,
-				ScreenHeight: params.Device.ScreenHeight,
-			})
-		if err != nil {
-			return err
-		}
+	deviceID, err := ts.db.AddDeviceIfNotExists(ctx,
+		&model.Device{
+			UserID:       params.User.ID,
+			Manufacturer: params.Device.Manufacturer,
+			Model:        params.Device.Model,
+			BuildNumber:  params.Device.BuildNumber,
+			OS:           params.Device.OS,
+			ScreenWidth:  params.Device.ScreenWidth,
+			ScreenHeight: params.Device.ScreenHeight,
+		})
+	if err != nil {
+		return err
+	}
 
-		var telemetries []model.Telemetry
-		for i := 0; i < len(params.Data); i++ {
-			telemetries = append(telemetries, model.Telemetry{
-				UserUID:    userID,
-				DeviceID:   deviceID,
-				OSVersion:  params.Device.OSVersion,
-				AppVersion: params.AppVersion,
-				Action:     params.Data[i].Action,
-				Data:       params.Data[i].Data,
-				Timestamp:  params.Data[i].Timestamp,
-			})
-		}
+	var telemetries []model.Telemetry
+	for i := 0; i < len(params.Data); i++ {
+		telemetries = append(telemetries, model.Telemetry{
+			UserUID:    userID,
+			DeviceID:   deviceID,
+			OSVersion:  params.Device.OSVersion,
+			AppVersion: params.AppVersion,
+			Action:     params.Data[i].Action,
+			Data:       params.Data[i].Data,
+			Timestamp:  params.Data[i].Timestamp,
+		})
+	}
 
-		return tx.Telemetry().AddTelemetries(ctx, telemetries)
-	})
+	return ts.db.AddTelemetries(ctx, telemetries)
 }
