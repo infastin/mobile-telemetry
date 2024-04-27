@@ -73,8 +73,8 @@ github.com/hexops/gotextdiff v1.0.3 h1:gitA9+qJrrTCsiCl7+kh75nPqQt1cx4ZkudSTLoUq
 github.com/hexops/gotextdiff v1.0.3/go.mod h1:pSWU5MAI3yDq+fZBTazCSJysOMbxWL1BSow5/V2vxeg=
 github.com/ilyakaznacheev/cleanenv v1.5.0 h1:0VNZXggJE2OYdXE87bfSSwGxeiGt9moSR2lOrsHHvr4=
 github.com/ilyakaznacheev/cleanenv v1.5.0/go.mod h1:a5aDzaJrLCQZsazHol1w8InnDcOX0OColm64SlIi6gk=
-github.com/infastin/go-validation v0.0.0-20240426230119-1b87df6b94a2 h1:cJK4BNTYNXkLIe/dfgb72IaHua5Mmt07u3yK3/Clmsw=
-github.com/infastin/go-validation v0.0.0-20240426230119-1b87df6b94a2/go.mod h1:f/goAv0eXMLDzwxPUNdI5QTOjTrRFY+sUWdXpAHK1w0=
+github.com/infastin/go-validation v1.0.0 h1:tgYO8/WPmT+7MWP4XKAEuirfClWHAIdOGC79/wBsIK8=
+github.com/infastin/go-validation v1.0.0/go.mod h1:f/goAv0eXMLDzwxPUNdI5QTOjTrRFY+sUWdXpAHK1w0=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=

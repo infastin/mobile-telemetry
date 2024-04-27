@@ -35,7 +35,7 @@ require (
 require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/goccy/go-json v0.10.2
-	github.com/infastin/go-validation v0.0.0-20240426230119-1b87df6b94a2
+	github.com/infastin/go-validation v1.0.0
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
