@@ -1,34 +1,44 @@
 package app
 
 import (
+	"io"
 	"os"
+	"path"
 
 	"go.uber.org/fx"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
+
+	"github.com/rs/zerolog"
 )
 
 type LoggerParams struct {
 	fx.In
 
-	Level zapcore.Level `name:"logger_level"`
+	Level      zerolog.Level `name:"logger_level"`
+	Directory  string        `name:"logger_directory"`
+	MaxSize    int           `name:"logger_max_size"`
+	MaxAge     int           `name:"logger_max_age"`
+	MaxBackups int           `name:"logger_max_backups"`
 }
 
-func NewLogger(params LoggerParams) *zap.Logger {
-	var encoder zapcore.Encoder
-
-	switch Mode() {
-	case DebugMode:
-		encoderConfig := zap.NewDevelopmentEncoderConfig()
-		encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-		encoder = zapcore.NewConsoleEncoder(encoderConfig)
-	case ReleaseMode:
-		encoderConfig := zap.NewProductionEncoderConfig()
-		encoder = zapcore.NewJSONEncoder(encoderConfig)
+func NewLogger(params LoggerParams) zerolog.Logger {
+	var stdout io.Writer = os.Stdout
+	if Mode() != ReleaseMode {
+		stdout = zerolog.ConsoleWriter{Out: stdout}
 	}
 
-	writeSyncer := zapcore.AddSync(os.Stdout)
-	core := zapcore.NewCore(encoder, writeSyncer, params.Level)
+	files := &lumberjack.Logger{
+		Filename:   path.Join(params.Directory, "server.log"),
+		MaxSize:    params.MaxSize,
+		MaxAge:     params.MaxAge,
+		MaxBackups: params.MaxBackups,
+		LocalTime:  false,
+		Compress:   false,
+	}
 
-	return zap.New(core)
+	w := zerolog.MultiLevelWriter(stdout, files)
+	lg := zerolog.New(w).Level(params.Level)
+	lg = lg.With().Timestamp().Logger()
+
+	return lg
 }

@@ -7,20 +7,20 @@ import (
 
 	"github.com/infastin/go-validation"
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 type TrackHandler struct {
-	lg           *zap.Logger
+	lg           zerolog.Logger
 	trackService service.TrackService
 }
 
 type TrackHandlerParams struct {
 	fx.In
 
-	Logger       *zap.Logger
+	Logger       zerolog.Logger
 	TrackService service.TrackService
 }
 

@@ -3,15 +3,15 @@ package impl
 import (
 	"context"
 	"mobile-telemetry/server/service/model"
-	"mobile-telemetry/server/service/repo/db/badgerimpl/schema"
+	"mobile-telemetry/server/service/repo/db/badgerimpl/queries"
 )
 
 func (db *dbRepo) AddTelemetries(ctx context.Context, telemetries []model.Telemetry) (err error) {
-	batch := db.db.NewWriteBatch()
-	defer batch.Cancel()
+	batch := db.queries.BatchWrite()
+	defer batch.Discard()
 
 	for i := 0; i < len(telemetries); i++ {
-		entry, err := schema.TelemetryEntry(&schema.Telemetry{
+		_, err = batch.InsertTelemetry(&queries.TelemetryValueV1{
 			UserID:     telemetries[i].UserUID,
 			DeviceID:   uint64(telemetries[i].DeviceID),
 			OSVersion:  telemetries[i].OSVersion,
@@ -23,14 +23,9 @@ func (db *dbRepo) AddTelemetries(ctx context.Context, telemetries []model.Teleme
 		if err != nil {
 			return err
 		}
-
-		err = batch.SetEntry(entry)
-		if err != nil {
-			return err
-		}
 	}
 
-	err = batch.Flush()
+	err = batch.Commit()
 	if err != nil {
 		return err
 	}

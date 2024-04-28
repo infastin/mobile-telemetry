@@ -6,9 +6,9 @@ import (
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/infastin/go-validation"
-	"github.com/infastin/go-validation/is/int"
+	isint "github.com/infastin/go-validation/is/int"
+	"github.com/rs/zerolog"
 	"go.uber.org/fx"
-	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
@@ -30,14 +30,20 @@ func (cfg Config) Validate() error {
 type LoggerConfig struct {
 	fx.Out
 
-	Level zapcore.Level `env:"LEVEL" yaml:"level" name:"logger_level"`
+	Level      zerolog.Level `env:"LEVEL" yaml:"level" name:"logger_level"`
+	Directory  string        `env:"DIRECTORY" yaml:"directory" name:"logger_directory"`
+	MaxSize    int           `env:"MAX_SIZE" yaml:"max_size" name:"logger_max_size"`
+	MaxAge     int           `env:"MAX_AGE" yaml:"max_age" name:"logger_max_age"`
+	MaxBackups int           `env:"MAX_BACKUPS" yaml:"max_backups" name:"logger_max_backups"`
 }
 
 func (cfg LoggerConfig) Validate() error {
 	return validation.All(
 		validation.Comparable(cfg.Level, "level").In(
-			zapcore.DebugLevel, zapcore.InfoLevel, zapcore.WarnLevel, zapcore.ErrorLevel,
+			zerolog.TraceLevel, zerolog.DebugLevel,
+			zerolog.InfoLevel, zerolog.WarnLevel, zerolog.ErrorLevel,
 		),
+		validation.String(cfg.Directory, "directory").Required(true),
 	)
 }
 

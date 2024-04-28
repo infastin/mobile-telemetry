@@ -1,5 +1,5 @@
 BUILD_DIR=build
-MSGP_DIR=server/service/repo/db/badgerimpl/schema
+MSGP_DIR=server/service/repo/db/badgerimpl/queries
 MODULE=mobile-telemetry
 
 deps:

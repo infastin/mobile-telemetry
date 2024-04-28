@@ -3,23 +3,16 @@ package impl
 import (
 	"context"
 	"mobile-telemetry/server/entity"
-	"mobile-telemetry/server/service/repo/db/badgerimpl/schema"
+	"mobile-telemetry/server/service/repo/db/badgerimpl/queries"
 
 	"github.com/google/uuid"
 )
 
 func (db *dbRepo) AddUserIfNotExists(ctx context.Context, user *entity.User) (id uuid.UUID, err error) {
-	entry, err := schema.UserEntry(&schema.User{
-		ID: user.ID,
-	})
-	if err != nil {
-		return uuid.UUID{}, err
-	}
-
-	tx := db.db.NewTransaction(true)
+	tx := db.queries.Update()
 	defer tx.Discard()
 
-	err = tx.SetEntry(entry)
+	err = tx.InsertUser(queries.NewUserKey(user.ID))
 	if err != nil {
 		return uuid.UUID{}, err
 	}

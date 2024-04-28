@@ -12,20 +12,20 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 type Server struct {
-	lg     *zap.Logger
+	lg     zerolog.Logger
 	server *http.Server
 }
 
 type ServerParams struct {
 	fx.In
 
-	Logger           *zap.Logger
+	Logger           zerolog.Logger
 	TrackHandler     *TrackHandler
 	LoggerMiddleware *LoggerMiddleware
 
@@ -58,16 +58,16 @@ func New(lc fx.Lifecycle, shutdowner fx.Shutdowner, params ServerParams) *Server
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
-				srv.lg.Info("starting http server")
+				srv.lg.Info().Msg("starting http server")
 				if err := srv.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-					srv.lg.Error("could not start http server", zap.Error(err))
+					srv.lg.Err(err).Msg("could not start http server")
 					_ = shutdowner.Shutdown()
 				}
 			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			srv.lg.Info("shutting down http server")
+			srv.lg.Info().Msg("shutting down http server")
 			return srv.Shutdown()
 		},
 	})

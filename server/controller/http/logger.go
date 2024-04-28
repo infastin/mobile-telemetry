@@ -2,20 +2,17 @@ package http
 
 import (
 	"errors"
-	"fmt"
-	"mobile-telemetry/pkg/fastconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"github.com/rs/zerolog"
 )
 
 type LoggerMiddleware struct {
-	lg *zap.Logger
+	lg zerolog.Logger
 }
 
-func NewLoggerMiddleware(lg *zap.Logger) *LoggerMiddleware {
+func NewLoggerMiddleware(lg zerolog.Logger) *LoggerMiddleware {
 	return &LoggerMiddleware{
 		lg: lg,
 	}
@@ -30,36 +27,37 @@ func (m *LoggerMiddleware) Handle(next echo.HandlerFunc) echo.HandlerFunc {
 		err := next(c)
 		if err != nil {
 			c.Error(err)
-		} else if m.lg.Level() > zapcore.InfoLevel {
+		} else if m.lg.GetLevel() > zerolog.InfoLevel {
 			return nil
 		}
 
 		elapsed := time.Since(start)
 
-		lg := m.lg.With(
-			zap.String("method", req.Method),
-			zap.String("uri", req.RequestURI),
-			zap.String("addr", req.RemoteAddr),
-			zap.Int("status", resp.Status),
-			zap.Duration("elapsed", elapsed),
-		)
+		lgCtx := m.lg.With().
+			Str("method", req.Method).
+			Str("uri", req.RequestURI).
+			Str("addr", req.RemoteAddr).
+			Int("status", resp.Status).
+			Dur("elapsed", elapsed)
 
 		switch v := err.(type) {
 		case *PanicError:
-			lg.Error("request panic",
-				zap.Any("panic", v.Panic),
-				zap.String("stack", fastconv.String(v.Stack)),
-			)
+			lgCtx = lgCtx.
+				Any("panic", v.Panic).
+				Bytes("stack", v.Stack)
+			lg := lgCtx.Logger()
+			lg.Error().Msg("request panic")
 		case error:
-			var msg string
 			if echoErr := (*echo.HTTPError)(nil); errors.As(err, &echoErr) {
-				msg = fmt.Sprint(echoErr.Message)
+				lgCtx = lgCtx.Any("error", echoErr.Message)
 			} else {
-				msg = err.Error()
+				lgCtx = lgCtx.Err(err)
 			}
-			lg.Error("request error", zap.String("error", msg))
+			lg := lgCtx.Logger()
+			lg.Error().Msg("request error")
 		case nil:
-			lg.Info("request")
+			lg := lgCtx.Logger()
+			lg.Info().Msg("request")
 		}
 
 		return nil

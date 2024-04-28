@@ -6,19 +6,19 @@ import (
 	"mobile-telemetry/server/service/model"
 	"mobile-telemetry/server/service/repo/db"
 
+	"github.com/rs/zerolog"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 type trackService struct {
-	lg *zap.Logger
+	lg zerolog.Logger
 	db db.Repo
 }
 
 type TrackServiceParams struct {
 	fx.In
 
-	Logger   *zap.Logger
+	Logger   zerolog.Logger
 	Database db.Repo
 }
 
