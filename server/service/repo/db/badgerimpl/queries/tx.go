@@ -2,24 +2,26 @@ package queries
 
 import "github.com/dgraph-io/badger/v4"
 
+type writeTx interface {
+	Set(key, val []byte) error
+	SetEntry(entry *badger.Entry) error
+}
+
+type viewTx interface {
+	Get(key []byte) (item *badger.Item, err error)
+}
+
+type updateTx interface {
+	writeTx
+	viewTx
+}
+
 type UpdateTx struct {
 	queries *Queries
 	tx      *badger.Txn
 }
 
 func (tx *UpdateTx) Set(key, val []byte) (err error) {
-	err = tx.tx.Set(key, val)
-	if err != nil && err != badger.ErrTxnTooBig {
-		return err
-	}
-
-	if err != badger.ErrTxnTooBig {
-		return nil
-	}
-
-	_ = tx.tx.Commit()
-	tx.tx = tx.queries.db.NewTransaction(true)
-
 	return tx.SetEntry(badger.NewEntry(key, val))
 }
 

@@ -58,22 +58,22 @@ func (tx *UpdateTx) InsertDeviceIndex(idx *DeviceIndexKey) (id uint64, err error
 	return insertDeviceIndex(tx, tx.queries.deviceSeq, idx)
 }
 
-func insertDeviceIndex(inserter Inserter, seq Sequence, idx *DeviceIndexKey) (id uint64, err error) {
+func insertDeviceIndex(tx updateTx, seq *badger.Sequence, idx *DeviceIndexKey) (id uint64, err error) {
 	key, _ := idx.MarshalBinary()
 
-	item, err := inserter.Get(key)
+	item, err := tx.Get(key)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return 0, err
 	}
 
 	if err == badger.ErrKeyNotFound {
-		return insertDeviceIndexWhenNotFound(inserter, seq, idx, key)
+		return insertDeviceIndexWhenNotFound(tx, seq, idx, key)
 	}
 
-	return insertDeviceIndexWhenExists(inserter, seq, idx, item)
+	return insertDeviceIndexWhenExists(tx, seq, idx, item)
 }
 
-func insertDeviceIndexWhenNotFound(inserter Inserter, seq Sequence, idx *DeviceIndexKey, key []byte,
+func insertDeviceIndexWhenNotFound(tx updateTx, seq *badger.Sequence, idx *DeviceIndexKey, key []byte,
 ) (id uint64, err error) {
 	id, err = seq.Next()
 	if err != nil {
@@ -86,7 +86,7 @@ func insertDeviceIndexWhenNotFound(inserter Inserter, seq Sequence, idx *DeviceI
 	val, _ := ids.MarshalMsg(nil)
 	val, _ = keys.MarshalMsg(val)
 
-	err = inserter.Set(key, val)
+	err = tx.Set(key, val)
 	if err != nil {
 		return 0, err
 	}
@@ -94,7 +94,7 @@ func insertDeviceIndexWhenNotFound(inserter Inserter, seq Sequence, idx *DeviceI
 	return id, nil
 }
 
-func insertDeviceIndexWhenExists(inserter Inserter, seq Sequence, idx *DeviceIndexKey, item *badger.Item,
+func insertDeviceIndexWhenExists(tx updateTx, seq *badger.Sequence, idx *DeviceIndexKey, item *badger.Item,
 ) (id uint64, err error) {
 	var (
 		ids  DeviceIndexIDs
@@ -133,7 +133,7 @@ func insertDeviceIndexWhenExists(inserter Inserter, seq Sequence, idx *DeviceInd
 	entry := badger.NewEntry(item.Key(), val).
 		WithMeta(byte(Meta(0).SetCollision(true)))
 
-	err = inserter.SetEntry(entry)
+	err = tx.SetEntry(entry)
 	if err != nil {
 		return 0, err
 	}
@@ -149,10 +149,10 @@ func (tx *UpdateTx) GetDeviceIndex(idx *DeviceIndexKey) (id uint64, err error) {
 	return getDeviceIndex(tx, idx)
 }
 
-func getDeviceIndex(getter Getter, idx *DeviceIndexKey) (id uint64, err error) {
+func getDeviceIndex(tx viewTx, idx *DeviceIndexKey) (id uint64, err error) {
 	key, _ := idx.MarshalBinary()
 
-	item, err := getter.Get(key)
+	item, err := tx.Get(key)
 	if err != nil {
 		return 0, err
 	}

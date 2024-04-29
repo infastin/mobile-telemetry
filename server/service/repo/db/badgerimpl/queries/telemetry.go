@@ -5,6 +5,7 @@ import (
 	"mobile-telemetry/pkg/fastconv"
 	"time"
 
+	"github.com/dgraph-io/badger/v4"
 	"github.com/google/uuid"
 )
 
@@ -62,7 +63,7 @@ func (tx *BatchWriteTx) InsertTelemetry(val *TelemetryValueV1) (id uint64, err e
 	return insertTelemetry(tx, tx.queries.telemetrySeq, val)
 }
 
-func insertTelemetry(setter Setter, seq Sequence, val *TelemetryValueV1) (id uint64, err error) {
+func insertTelemetry(tx writeTx, seq *badger.Sequence, val *TelemetryValueV1) (id uint64, err error) {
 	id, err = seq.Next()
 	if err != nil {
 		return 0, err
@@ -71,7 +72,7 @@ func insertTelemetry(setter Setter, seq Sequence, val *TelemetryValueV1) (id uin
 	keyb, _ := NewTelemetryKey(id).MarshalBinary()
 	valb, _ := val.MarshalMsg(nil)
 
-	err = setter.Set(keyb, valb)
+	err = tx.Set(keyb, valb)
 	if err != nil {
 		return 0, err
 	}

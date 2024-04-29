@@ -2,30 +2,14 @@ package queries
 
 import (
 	"github.com/dgraph-io/badger/v4"
+	"github.com/valyala/bytebufferpool"
 )
-
-type Setter interface {
-	Set(key, val []byte) error
-	SetEntry(entry *badger.Entry) error
-}
-
-type Getter interface {
-	Get(key []byte) (item *badger.Item, err error)
-}
-
-type Sequence interface {
-	Next() (id uint64, err error)
-}
-
-type Inserter interface {
-	Setter
-	Getter
-}
 
 type Queries struct {
 	db           *badger.DB
 	deviceSeq    *badger.Sequence
 	telemetrySeq *badger.Sequence
+	pool         bytebufferpool.Pool
 }
 
 func New(db *badger.DB, deviceSeq, telemetrySeq *badger.Sequence) *Queries {
@@ -33,6 +17,7 @@ func New(db *badger.DB, deviceSeq, telemetrySeq *badger.Sequence) *Queries {
 		db:           db,
 		deviceSeq:    deviceSeq,
 		telemetrySeq: telemetrySeq,
+		pool:         bytebufferpool.Pool{},
 	}
 }
 

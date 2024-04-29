@@ -53,8 +53,8 @@ func (tx *UpdateTx) InsertDevice(key *DeviceKey, val *DeviceValueV1) (err error)
 	return insertDevice(tx, key, val)
 }
 
-func insertDevice(setter Setter, key *DeviceKey, val *DeviceValueV1) (err error) {
+func insertDevice(tx writeTx, key *DeviceKey, val *DeviceValueV1) (err error) {
 	keyb, _ := key.MarshalBinary()
 	valb, _ := val.MarshalMsg(nil)
-	return setter.Set(keyb, valb)
+	return tx.Set(keyb, valb)
 }

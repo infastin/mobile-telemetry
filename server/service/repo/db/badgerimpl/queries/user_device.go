@@ -2,7 +2,6 @@ package queries
 
 import (
 	"encoding/binary"
-	"mobile-telemetry/pkg/fastconv"
 
 	"github.com/google/uuid"
 )
@@ -32,7 +31,7 @@ func (ud *UserDeviceKey) MarshalBinary() (data []byte, err error) {
 		return ud.cachedKey, nil
 	}
 
-	data = append(data, fastconv.Bytes(UserDevicePrefix)...)
+	data = append(data, UserDevicePrefix...)
 	data = append(data, ':')
 	data = append(data, ud.UserID[:]...)
 	data = binary.BigEndian.AppendUint64(data, ud.DeviceID)
@@ -46,7 +45,7 @@ func (tx *UpdateTx) InsertUserDevice(key *UserDeviceKey) (err error) {
 	return insertUserDevice(tx, key)
 }
 
-func insertUserDevice(setter Setter, key *UserDeviceKey) (err error) {
+func insertUserDevice(tx writeTx, key *UserDeviceKey) (err error) {
 	keyb, _ := key.MarshalBinary()
-	return setter.Set(keyb, nil)
+	return tx.Set(keyb, nil)
 }

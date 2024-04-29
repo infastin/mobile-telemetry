@@ -1,8 +1,6 @@
 package queries
 
 import (
-	"mobile-telemetry/pkg/fastconv"
-
 	"github.com/google/uuid"
 )
 
@@ -29,7 +27,7 @@ func (u *UserKey) MarshalBinary() (data []byte, err error) {
 		return u.cachedKey, nil
 	}
 
-	data = append(data, fastconv.Bytes(UserPrefix)...)
+	data = append(data, UserPrefix...)
 	data = append(data, ':')
 	data = append(data, u.ID[:]...)
 
@@ -42,7 +40,7 @@ func (tx *UpdateTx) InsertUser(key *UserKey) (err error) {
 	return insertUser(tx, key)
 }
 
-func insertUser(setter Setter, key *UserKey) (err error) {
+func insertUser(tx writeTx, key *UserKey) (err error) {
 	keyb, _ := key.MarshalBinary()
-	return setter.Set(keyb, nil)
+	return tx.Set(keyb, nil)
 }
