@@ -35,17 +35,16 @@ func (ts *trackService) AddTelemetry(ctx context.Context, params service.AddTele
 		return err
 	}
 
-	deviceID, err := ts.db.AddDeviceIfNotExists(ctx,
-		&model.Device{
-			UserID:       params.User.ID,
-			Manufacturer: params.Device.Manufacturer,
-			Model:        params.Device.Model,
-			BuildNumber:  params.Device.BuildNumber,
-			OS:           params.Device.OS,
-			ScreenWidth:  params.Device.ScreenWidth,
-			ScreenHeight: params.Device.ScreenHeight,
-		})
-	if err != nil {
+	var deviceID int
+	if deviceID, err = ts.db.AddDeviceIfNotExists(ctx, &model.Device{
+		UserID:       params.User.ID,
+		Manufacturer: params.Device.Manufacturer,
+		Model:        params.Device.Model,
+		BuildNumber:  params.Device.BuildNumber,
+		OS:           params.Device.OS,
+		ScreenWidth:  params.Device.ScreenWidth,
+		ScreenHeight: params.Device.ScreenHeight,
+	}); err != nil {
 		return err
 	}
 

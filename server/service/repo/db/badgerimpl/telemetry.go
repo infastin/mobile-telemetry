@@ -11,7 +11,7 @@ func (db *dbRepo) AddTelemetries(ctx context.Context, telemetries []model.Teleme
 	defer batch.Discard()
 
 	for i := 0; i < len(telemetries); i++ {
-		_, err = batch.InsertTelemetry(&queries.TelemetryValueV1{
+		if _, err = batch.InsertTelemetry(&queries.TelemetryValueV1{
 			UserID:     telemetries[i].UserUID,
 			DeviceID:   uint64(telemetries[i].DeviceID),
 			OSVersion:  telemetries[i].OSVersion,
@@ -19,8 +19,7 @@ func (db *dbRepo) AddTelemetries(ctx context.Context, telemetries []model.Teleme
 			Action:     telemetries[i].Action,
 			Data:       telemetries[i].Data,
 			Timestamp:  telemetries[i].Timestamp,
-		})
-		if err != nil {
+		}); err != nil {
 			return err
 		}
 	}

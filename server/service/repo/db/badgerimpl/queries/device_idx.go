@@ -102,15 +102,14 @@ func insertDeviceIndexWhenExists(tx updateTx, seq *badger.Sequence, idx *DeviceI
 		keys DeviceIndexKeys
 	)
 
-	err = item.Value(func(val []byte) error {
+	if err := item.Value(func(val []byte) error {
 		val, err = ids.UnmarshalMsg(val)
 		if err != nil {
 			return err
 		}
 		_, err = keys.UnmarshalMsg(val)
 		return err
-	})
-	if err != nil {
+	}); err != nil {
 		return 0, err
 	}
 
@@ -172,15 +171,14 @@ func getDeviceIndexOnCollision(idx *DeviceIndexKey, item *badger.Item) (id uint6
 		keys DeviceIndexKeys
 	)
 
-	err = item.Value(func(val []byte) error {
+	if err := item.Value(func(val []byte) error {
 		val, err = ids.UnmarshalMsg(val)
 		if err != nil {
 			return err
 		}
 		_, err = keys.UnmarshalMsg(val)
 		return err
-	})
-	if err != nil {
+	}); err != nil {
 		return 0, err
 	}
 
@@ -196,12 +194,10 @@ func getDeviceIndexOnCollision(idx *DeviceIndexKey, item *badger.Item) (id uint6
 func getDeviceIndexWhenNoCollision(item *badger.Item) (id uint64, err error) {
 	var ids DeviceIndexIDs
 
-	err = item.Value(func(val []byte) error {
+	if err := item.Value(func(val []byte) error {
 		_, err = ids.UnmarshalMsg(val)
 		return err
-	})
-
-	if err != nil {
+	}); err != nil {
 		return 0, err
 	}
 

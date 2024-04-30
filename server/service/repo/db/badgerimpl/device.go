@@ -25,15 +25,14 @@ func (db *dbRepo) AddDeviceIfNotExists(ctx context.Context, device *model.Device
 			return 0, err
 		}
 
-		err = tx.InsertDevice(queries.NewDeviceKey(devID), &queries.DeviceValueV1{
+		if err := tx.InsertDevice(queries.NewDeviceKey(devID), &queries.DeviceValueV1{
 			Manufacturer: device.Manufacturer,
 			Model:        device.Model,
 			BuildNumber:  device.BuildNumber,
 			OS:           device.OS,
 			ScreenWidth:  device.ScreenWidth,
 			ScreenHeight: device.ScreenHeight,
-		})
-		if err != nil {
+		}); err != nil {
 			return 0, err
 		}
 	}
