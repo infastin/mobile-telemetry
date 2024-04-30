@@ -36,6 +36,7 @@ func (t *TelemetryKey) MarshalBinary() (data []byte, err error) {
 		return t.cachedKey, nil
 	}
 
+	data = make([]byte, 0, len(TelemetryPrefix)+1+8)
 	data = append(data, fastconv.Bytes(TelemetryPrefix)...)
 	data = append(data, ':')
 	data = binary.BigEndian.AppendUint64(data, t.ID)

@@ -31,6 +31,7 @@ func (d *DeviceKey) MarshalBinary() (data []byte, err error) {
 		return d.cachedKey, nil
 	}
 
+	data = make([]byte, 0, len(DevicePrefix)+1+8)
 	data = append(data, fastconv.Bytes(DevicePrefix)...)
 	data = append(data, ':')
 	data = binary.BigEndian.AppendUint64(data, d.ID)

@@ -41,6 +41,7 @@ func (d *DeviceIndexKey) MarshalBinary() (data []byte, err error) {
 		return d.cachedKey, nil
 	}
 
+	data = make([]byte, 0, len(DeviceIndexPrefix)+1+8)
 	data = append(data, fastconv.Bytes(DeviceIndexPrefix)...)
 	data = append(data, ':')
 

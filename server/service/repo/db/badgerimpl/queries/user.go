@@ -27,6 +27,7 @@ func (u *UserKey) MarshalBinary() (data []byte, err error) {
 		return u.cachedKey, nil
 	}
 
+	data = make([]byte, 0, len(UserPrefix)+1+16)
 	data = append(data, UserPrefix...)
 	data = append(data, ':')
 	data = append(data, u.ID[:]...)

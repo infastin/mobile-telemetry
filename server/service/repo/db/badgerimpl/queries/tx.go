@@ -1,6 +1,8 @@
 package queries
 
-import "github.com/dgraph-io/badger/v4"
+import (
+	"github.com/dgraph-io/badger/v4"
+)
 
 type writeTx interface {
 	Set(key, val []byte) error
