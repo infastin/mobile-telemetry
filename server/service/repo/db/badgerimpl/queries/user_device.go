@@ -2,6 +2,7 @@ package queries
 
 import (
 	"encoding/binary"
+	"slices"
 
 	"github.com/google/uuid"
 )
@@ -9,38 +10,25 @@ import (
 const UserDevicePrefix = "user_device"
 
 type UserDeviceKey struct {
-	UserID    uuid.UUID
-	DeviceID  uint64
-	cachedKey []byte
+	UserID   uuid.UUID
+	DeviceID uint64
 }
 
 func NewUserDeviceKey(userID uuid.UUID, deviceID uint64) *UserDeviceKey {
 	return &UserDeviceKey{
-		UserID:    userID,
-		DeviceID:  deviceID,
-		cachedKey: nil,
+		UserID:   userID,
+		DeviceID: deviceID,
 	}
 }
 
-func (ud *UserDeviceKey) Equal(other *UserDeviceKey) bool {
-	return ud.UserID == other.UserID && ud.DeviceID == other.DeviceID
-}
-
-func (ud *UserDeviceKey) MarshalBinary() (data []byte, err error) {
-	if ud.cachedKey != nil {
-		return ud.cachedKey, nil
-	}
-
-	data = make([]byte, 0, len(UserDevicePrefix)+1+16+1+8)
-	data = append(data, UserDevicePrefix...)
-	data = append(data, ':')
-	data = append(data, ud.UserID[:]...)
-	data = append(data, ':')
-	data = binary.BigEndian.AppendUint64(data, ud.DeviceID)
-
-	ud.cachedKey = data
-
-	return ud.cachedKey, nil
+func (ud *UserDeviceKey) MarshalKey(b []byte) []byte {
+	b = slices.Grow(b, len(UserDevicePrefix)+1+16+1+8)
+	b = append(b, UserDevicePrefix...)
+	b = append(b, ':')
+	b = append(b, ud.UserID[:]...)
+	b = append(b, ':')
+	b = binary.BigEndian.AppendUint64(b, ud.DeviceID)
+	return b
 }
 
 func (tx *UpdateTx) InsertUserDevice(key *UserDeviceKey) (err error) {
@@ -48,6 +36,5 @@ func (tx *UpdateTx) InsertUserDevice(key *UserDeviceKey) (err error) {
 }
 
 func insertUserDevice(tx writeTx, key *UserDeviceKey) (err error) {
-	keyb, _ := key.MarshalBinary()
-	return tx.Set(keyb, nil)
+	return tx.Set(key.MarshalKey(nil), nil)
 }

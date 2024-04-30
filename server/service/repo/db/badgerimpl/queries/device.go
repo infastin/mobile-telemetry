@@ -3,6 +3,7 @@ package queries
 import (
 	"encoding/binary"
 	"mobile-telemetry/pkg/fastconv"
+	"slices"
 )
 
 //go:generate msgp -tests=false
@@ -11,34 +12,21 @@ import (
 const DevicePrefix = "device"
 
 type DeviceKey struct {
-	ID        uint64
-	cachedKey []byte
+	ID uint64
 }
 
 func NewDeviceKey(id uint64) *DeviceKey {
 	return &DeviceKey{
-		ID:        id,
-		cachedKey: nil,
+		ID: id,
 	}
 }
 
-func (d *DeviceKey) Equal(other *DeviceKey) bool {
-	return d.ID == other.ID
-}
-
-func (d *DeviceKey) MarshalBinary() (data []byte, err error) {
-	if d.cachedKey != nil {
-		return d.cachedKey, nil
-	}
-
-	data = make([]byte, 0, len(DevicePrefix)+1+8)
-	data = append(data, fastconv.Bytes(DevicePrefix)...)
-	data = append(data, ':')
-	data = binary.BigEndian.AppendUint64(data, d.ID)
-
-	d.cachedKey = data
-
-	return d.cachedKey, nil
+func (d *DeviceKey) MarshalKey(b []byte) []byte {
+	b = slices.Grow(b, len(DevicePrefix)+1+8)
+	b = append(b, fastconv.Bytes(DevicePrefix)...)
+	b = append(b, ':')
+	b = binary.BigEndian.AppendUint64(b, d.ID)
+	return b
 }
 
 type DeviceValueV1 struct {
@@ -55,7 +43,7 @@ func (tx *UpdateTx) InsertDevice(key *DeviceKey, val *DeviceValueV1) (err error)
 }
 
 func insertDevice(tx writeTx, key *DeviceKey, val *DeviceValueV1) (err error) {
-	keyb, _ := key.MarshalBinary()
+	keyb := key.MarshalKey(nil)
 	valb, _ := val.MarshalMsg(nil)
 	return tx.Set(keyb, valb)
 }

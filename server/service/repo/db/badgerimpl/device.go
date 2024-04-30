@@ -13,14 +13,19 @@ func (db *dbRepo) AddDeviceIfNotExists(ctx context.Context, device *model.Device
 	defer tx.Discard()
 
 	devIdxKey := queries.NewDeviceIndexKey(device.Manufacturer, device.Model, device.BuildNumber)
+	devIdxVal := &queries.DeviceIndexValue{
+		Manufacturer: device.Manufacturer,
+		Model:        device.Model,
+		BuildNumber:  device.BuildNumber,
+	}
 
-	devID, err := tx.GetDeviceIndex(devIdxKey)
+	devID, err := tx.FindDeviceIndex(devIdxKey, devIdxVal)
 	if err != nil && err != badger.ErrKeyNotFound {
 		return 0, err
 	}
 
 	if err == badger.ErrKeyNotFound {
-		devID, err = tx.InsertDeviceIndex(devIdxKey)
+		devID, err = tx.InsertDeviceIndex(devIdxKey, devIdxVal)
 		if err != nil {
 			return 0, err
 		}

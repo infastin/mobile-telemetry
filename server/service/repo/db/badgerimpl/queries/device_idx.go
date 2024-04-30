@@ -1,205 +1,148 @@
 package queries
 
 import (
+	"encoding/binary"
 	"mobile-telemetry/pkg/fastconv"
+	"slices"
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/dgraph-io/badger/v4"
 )
 
 //go:generate msgp -tests=false
+//msgp:ignore DeviceIndexKey
 
 const DeviceIndexPrefix = "device_idx"
 
 type DeviceIndexKey struct {
-	Manufacturer string `msg:"manufacturer"`
-	Model        string `msg:"model"`
-	BuildNumber  string `msg:"build_number"`
-	cachedKey    []byte
+	Hash      uint64
+	ID        uint64
+	Collision bool
 }
 
 func NewDeviceIndexKey(manufacturer, model, buildNumber string) *DeviceIndexKey {
-	return &DeviceIndexKey{
-		Manufacturer: manufacturer,
-		Model:        model,
-		BuildNumber:  buildNumber,
-		cachedKey:    nil,
-	}
-}
-
-func (d *DeviceIndexKey) Equal(other *DeviceIndexKey) bool {
-	return d.Manufacturer == other.Manufacturer &&
-		d.Model == other.Model &&
-		d.BuildNumber == other.Model
-}
-
-type DeviceIndexIDs []uint64
-type DeviceIndexKeys []DeviceIndexKey
-
-func (d *DeviceIndexKey) MarshalBinary() (data []byte, err error) {
-	if d.cachedKey != nil {
-		return d.cachedKey, nil
-	}
-
-	data = make([]byte, 0, len(DeviceIndexPrefix)+1+8)
-	data = append(data, fastconv.Bytes(DeviceIndexPrefix)...)
-	data = append(data, ':')
-
 	digest := xxhash.New()
-	digest.WriteString(d.Manufacturer)
-	digest.WriteString(d.Model)
-	digest.WriteString(d.BuildNumber)
+	digest.WriteString(manufacturer)
+	digest.WriteString(model)
+	digest.WriteString(buildNumber)
 
-	d.cachedKey = digest.Sum(data)
-
-	return d.cachedKey, nil
+	return &DeviceIndexKey{
+		Hash:      digest.Sum64(),
+		ID:        0,
+		Collision: false,
+	}
 }
 
-func (tx *UpdateTx) InsertDeviceIndex(idx *DeviceIndexKey) (id uint64, err error) {
-	return insertDeviceIndex(tx, tx.queries.deviceSeq, idx)
+func (d *DeviceIndexKey) MarshalKey(b []byte) []byte {
+	b = slices.Grow(b, len(DeviceIndexPrefix)+1+8+8)
+	b = append(b, fastconv.Bytes(DeviceIndexPrefix)...)
+	b = append(b, ':')
+	b = binary.BigEndian.AppendUint64(b, d.Hash)
+	b = binary.BigEndian.AppendUint64(b, d.ID)
+	return b
 }
 
-func insertDeviceIndex(tx updateTx, seq *badger.Sequence, idx *DeviceIndexKey) (id uint64, err error) {
-	key, _ := idx.MarshalBinary()
-
-	item, err := tx.Get(key)
-	if err != nil && err != badger.ErrKeyNotFound {
-		return 0, err
+func (d *DeviceIndexKey) UnmarshalKey(b []byte) error {
+	if len(b) != len(DeviceIndexPrefix)+1+8+8 {
+		return NewInvalidKeySizeError(len(DeviceIndexPrefix)+1+8+8, len(b))
 	}
 
-	if err == badger.ErrKeyNotFound {
-		return insertDeviceIndexWhenNotFound(tx, seq, idx, key)
+	prefix := fastconv.String(b[:len(DeviceIndexPrefix)])
+	if prefix != DeviceIndexPrefix {
+		return NewInvalidKeyPrefix(DeviceIndexPrefix, prefix)
 	}
 
-	return insertDeviceIndexWhenExists(tx, seq, idx, item)
+	b = b[len(DeviceIndexPrefix)+1:]
+	d.Hash = binary.BigEndian.Uint64(b)
+	b = b[8:]
+	d.ID = binary.BigEndian.Uint64(b)
+
+	return nil
 }
 
-func insertDeviceIndexWhenNotFound(tx updateTx, seq *badger.Sequence, idx *DeviceIndexKey, key []byte,
+func (d *DeviceIndexKey) MarshalPrefix(b []byte) []byte {
+	b = slices.Grow(b, len(DeviceIndexPrefix)+1+8)
+	b = append(b, fastconv.Bytes(DeviceIndexPrefix)...)
+	b = append(b, ':')
+	b = binary.BigEndian.AppendUint64(b, d.Hash)
+	return b
+}
+
+func (d *DeviceIndexKey) AppendIDToPrefix(b []byte) []byte {
+	return binary.BigEndian.AppendUint64(b, d.ID)
+}
+
+type DeviceIndexValue struct {
+	Manufacturer string `msg:"manufacturer"`
+	Model        string `msg:"model"`
+	BuildNumber  string `msg:"build_number"`
+}
+
+func (tx *UpdateTx) InsertDeviceIndex(key *DeviceIndexKey, val *DeviceIndexValue) (id uint64, err error) {
+	return insertDeviceIndex(tx, tx.queries.deviceSeq, key, val)
+}
+
+func insertDeviceIndex(tx updateTx, seq *badger.Sequence, key *DeviceIndexKey, val *DeviceIndexValue,
 ) (id uint64, err error) {
-	id, err = seq.Next()
+	key.ID, err = seq.Next()
 	if err != nil {
 		return 0, err
 	}
 
-	ids := DeviceIndexIDs{id}
-	keys := DeviceIndexKeys{*idx}
+	keyb := key.MarshalKey(nil)
+	valb, _ := val.MarshalMsg(nil)
 
-	val, _ := ids.MarshalMsg(nil)
-	val, _ = keys.MarshalMsg(val)
-
-	err = tx.Set(key, val)
+	err = tx.SetEntry(badger.NewEntry(keyb, valb).
+		WithMeta(byte(Meta(0).SetCollision(key.Collision))))
 	if err != nil {
 		return 0, err
 	}
 
-	return id, nil
+	return key.ID, nil
 }
 
-func insertDeviceIndexWhenExists(tx updateTx, seq *badger.Sequence, idx *DeviceIndexKey, item *badger.Item,
-) (id uint64, err error) {
-	var (
-		ids  DeviceIndexIDs
-		keys DeviceIndexKeys
-	)
+func (tx *ViewTx) FindDeviceIndex(key *DeviceIndexKey, val *DeviceIndexValue) (id uint64, err error) {
+	return findDeviceIndex(tx, key, val)
+}
 
-	if err := item.Value(func(val []byte) error {
-		val, err = ids.UnmarshalMsg(val)
+func (tx *UpdateTx) FindDeviceIndex(key *DeviceIndexKey, val *DeviceIndexValue) (id uint64, err error) {
+	return findDeviceIndex(tx, key, val)
+}
+
+func findDeviceIndex(tx viewTx, key *DeviceIndexKey, val *DeviceIndexValue) (id uint64, err error) {
+	opts := badger.DefaultIteratorOptions
+	opts.PrefetchValues = false
+	opts.Prefix = key.MarshalPrefix(nil)
+
+	it := tx.NewIterator(opts)
+	defer it.Close()
+
+	for it.Rewind(); it.Valid(); it.Next() {
+		item := it.Item()
+
+		meta := Meta(item.UserMeta())
+		if meta.Collision() {
+			var itVal DeviceIndexValue
+			if err := item.Value(func(valb []byte) error {
+				_, err = itVal.UnmarshalMsg(valb)
+				return err
+			}); err != nil {
+				return 0, err
+			}
+
+			if itVal != *val {
+				continue
+			}
+		}
+
+		err = key.UnmarshalKey(item.Key())
 		if err != nil {
-			return err
+			return 0, err
 		}
-		_, err = keys.UnmarshalMsg(val)
-		return err
-	}); err != nil {
-		return 0, err
-	}
 
-	for i := 0; i < len(keys); i++ {
-		if idx.Equal(&keys[i]) {
-			return 0, badger.ErrConflict
-		}
-	}
-
-	id, err = seq.Next()
-	if err != nil {
-		return 0, err
-	}
-
-	ids = append(ids, id)
-	keys = append(keys, *idx)
-
-	val, _ := ids.MarshalMsg(nil)
-	val, _ = keys.MarshalMsg(val)
-
-	entry := badger.NewEntry(item.Key(), val).
-		WithMeta(byte(Meta(0).SetCollision(true)))
-
-	err = tx.SetEntry(entry)
-	if err != nil {
-		return 0, err
-	}
-
-	return id, nil
-}
-
-func (tx *ViewTx) GetDeviceIndex(idx *DeviceIndexKey) (id uint64, err error) {
-	return getDeviceIndex(tx, idx)
-}
-
-func (tx *UpdateTx) GetDeviceIndex(idx *DeviceIndexKey) (id uint64, err error) {
-	return getDeviceIndex(tx, idx)
-}
-
-func getDeviceIndex(tx viewTx, idx *DeviceIndexKey) (id uint64, err error) {
-	key, _ := idx.MarshalBinary()
-
-	item, err := tx.Get(key)
-	if err != nil {
-		return 0, err
-	}
-
-	m := Meta(item.UserMeta())
-	if m.Collision() {
-		return getDeviceIndexOnCollision(idx, item)
-	}
-
-	return getDeviceIndexWhenNoCollision(item)
-}
-
-func getDeviceIndexOnCollision(idx *DeviceIndexKey, item *badger.Item) (id uint64, err error) {
-	var (
-		ids  DeviceIndexIDs
-		keys DeviceIndexKeys
-	)
-
-	if err := item.Value(func(val []byte) error {
-		val, err = ids.UnmarshalMsg(val)
-		if err != nil {
-			return err
-		}
-		_, err = keys.UnmarshalMsg(val)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	for i := 0; i < len(keys); i++ {
-		if idx.Equal(&keys[i]) {
-			return ids[i], nil
-		}
+		key.Collision = meta.Collision()
+		return key.ID, nil
 	}
 
 	return 0, badger.ErrKeyNotFound
-}
-
-func getDeviceIndexWhenNoCollision(item *badger.Item) (id uint64, err error) {
-	var ids DeviceIndexIDs
-
-	if err := item.Value(func(val []byte) error {
-		_, err = ids.UnmarshalMsg(val)
-		return err
-	}); err != nil {
-		return 0, err
-	}
-
-	return ids[0], nil
 }

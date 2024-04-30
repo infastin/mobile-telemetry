@@ -11,6 +11,7 @@ type writeTx interface {
 
 type viewTx interface {
 	Get(key []byte) (item *badger.Item, err error)
+	NewIterator(opts badger.IteratorOptions) *badger.Iterator
 }
 
 type updateTx interface {
@@ -45,6 +46,10 @@ func (tx *UpdateTx) SetEntry(entry *badger.Entry) (err error) {
 
 func (tx *UpdateTx) Get(key []byte) (item *badger.Item, err error) {
 	return tx.tx.Get(key)
+}
+
+func (tx *UpdateTx) NewIterator(opts badger.IteratorOptions) *badger.Iterator {
+	return tx.tx.NewIterator(opts)
 }
 
 func (tx *UpdateTx) Commit() (err error) {
@@ -82,6 +87,10 @@ type ViewTx struct {
 
 func (tx *ViewTx) Get(key []byte) (item *badger.Item, err error) {
 	return tx.tx.Get(key)
+}
+
+func (tx *ViewTx) NewIterator(opts badger.IteratorOptions) *badger.Iterator {
+	return tx.tx.NewIterator(opts)
 }
 
 func (tx *ViewTx) Commit() (err error) {

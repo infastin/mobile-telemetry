@@ -7,87 +7,7 @@ import (
 )
 
 // DecodeMsg implements msgp.Decodable
-func (z *DeviceIndexIDs) DecodeMsg(dc *msgp.Reader) (err error) {
-	var zb0002 uint32
-	zb0002, err = dc.ReadArrayHeader()
-	if err != nil {
-		err = msgp.WrapError(err)
-		return
-	}
-	if cap((*z)) >= int(zb0002) {
-		(*z) = (*z)[:zb0002]
-	} else {
-		(*z) = make(DeviceIndexIDs, zb0002)
-	}
-	for zb0001 := range *z {
-		(*z)[zb0001], err = dc.ReadUint64()
-		if err != nil {
-			err = msgp.WrapError(err, zb0001)
-			return
-		}
-	}
-	return
-}
-
-// EncodeMsg implements msgp.Encodable
-func (z DeviceIndexIDs) EncodeMsg(en *msgp.Writer) (err error) {
-	err = en.WriteArrayHeader(uint32(len(z)))
-	if err != nil {
-		err = msgp.WrapError(err)
-		return
-	}
-	for zb0003 := range z {
-		err = en.WriteUint64(z[zb0003])
-		if err != nil {
-			err = msgp.WrapError(err, zb0003)
-			return
-		}
-	}
-	return
-}
-
-// MarshalMsg implements msgp.Marshaler
-func (z DeviceIndexIDs) MarshalMsg(b []byte) (o []byte, err error) {
-	o = msgp.Require(b, z.Msgsize())
-	o = msgp.AppendArrayHeader(o, uint32(len(z)))
-	for zb0003 := range z {
-		o = msgp.AppendUint64(o, z[zb0003])
-	}
-	return
-}
-
-// UnmarshalMsg implements msgp.Unmarshaler
-func (z *DeviceIndexIDs) UnmarshalMsg(bts []byte) (o []byte, err error) {
-	var zb0002 uint32
-	zb0002, bts, err = msgp.ReadArrayHeaderBytes(bts)
-	if err != nil {
-		err = msgp.WrapError(err)
-		return
-	}
-	if cap((*z)) >= int(zb0002) {
-		(*z) = (*z)[:zb0002]
-	} else {
-		(*z) = make(DeviceIndexIDs, zb0002)
-	}
-	for zb0001 := range *z {
-		(*z)[zb0001], bts, err = msgp.ReadUint64Bytes(bts)
-		if err != nil {
-			err = msgp.WrapError(err, zb0001)
-			return
-		}
-	}
-	o = bts
-	return
-}
-
-// Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
-func (z DeviceIndexIDs) Msgsize() (s int) {
-	s = msgp.ArrayHeaderSize + (len(z) * (msgp.Uint64Size))
-	return
-}
-
-// DecodeMsg implements msgp.Decodable
-func (z *DeviceIndexKey) DecodeMsg(dc *msgp.Reader) (err error) {
+func (z *DeviceIndexValue) DecodeMsg(dc *msgp.Reader) (err error) {
 	var field []byte
 	_ = field
 	var zb0001 uint32
@@ -134,7 +54,7 @@ func (z *DeviceIndexKey) DecodeMsg(dc *msgp.Reader) (err error) {
 }
 
 // EncodeMsg implements msgp.Encodable
-func (z DeviceIndexKey) EncodeMsg(en *msgp.Writer) (err error) {
+func (z DeviceIndexValue) EncodeMsg(en *msgp.Writer) (err error) {
 	// map header, size 3
 	// write "manufacturer"
 	err = en.Append(0x83, 0xac, 0x6d, 0x61, 0x6e, 0x75, 0x66, 0x61, 0x63, 0x74, 0x75, 0x72, 0x65, 0x72)
@@ -170,7 +90,7 @@ func (z DeviceIndexKey) EncodeMsg(en *msgp.Writer) (err error) {
 }
 
 // MarshalMsg implements msgp.Marshaler
-func (z DeviceIndexKey) MarshalMsg(b []byte) (o []byte, err error) {
+func (z DeviceIndexValue) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
 	// map header, size 3
 	// string "manufacturer"
@@ -186,7 +106,7 @@ func (z DeviceIndexKey) MarshalMsg(b []byte) (o []byte, err error) {
 }
 
 // UnmarshalMsg implements msgp.Unmarshaler
-func (z *DeviceIndexKey) UnmarshalMsg(bts []byte) (o []byte, err error) {
+func (z *DeviceIndexValue) UnmarshalMsg(bts []byte) (o []byte, err error) {
 	var field []byte
 	_ = field
 	var zb0001 uint32
@@ -234,199 +154,7 @@ func (z *DeviceIndexKey) UnmarshalMsg(bts []byte) (o []byte, err error) {
 }
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
-func (z DeviceIndexKey) Msgsize() (s int) {
+func (z DeviceIndexValue) Msgsize() (s int) {
 	s = 1 + 13 + msgp.StringPrefixSize + len(z.Manufacturer) + 6 + msgp.StringPrefixSize + len(z.Model) + 13 + msgp.StringPrefixSize + len(z.BuildNumber)
-	return
-}
-
-// DecodeMsg implements msgp.Decodable
-func (z *DeviceIndexKeys) DecodeMsg(dc *msgp.Reader) (err error) {
-	var zb0002 uint32
-	zb0002, err = dc.ReadArrayHeader()
-	if err != nil {
-		err = msgp.WrapError(err)
-		return
-	}
-	if cap((*z)) >= int(zb0002) {
-		(*z) = (*z)[:zb0002]
-	} else {
-		(*z) = make(DeviceIndexKeys, zb0002)
-	}
-	for zb0001 := range *z {
-		var field []byte
-		_ = field
-		var zb0003 uint32
-		zb0003, err = dc.ReadMapHeader()
-		if err != nil {
-			err = msgp.WrapError(err, zb0001)
-			return
-		}
-		for zb0003 > 0 {
-			zb0003--
-			field, err = dc.ReadMapKeyPtr()
-			if err != nil {
-				err = msgp.WrapError(err, zb0001)
-				return
-			}
-			switch msgp.UnsafeString(field) {
-			case "manufacturer":
-				(*z)[zb0001].Manufacturer, err = dc.ReadString()
-				if err != nil {
-					err = msgp.WrapError(err, zb0001, "Manufacturer")
-					return
-				}
-			case "model":
-				(*z)[zb0001].Model, err = dc.ReadString()
-				if err != nil {
-					err = msgp.WrapError(err, zb0001, "Model")
-					return
-				}
-			case "build_number":
-				(*z)[zb0001].BuildNumber, err = dc.ReadString()
-				if err != nil {
-					err = msgp.WrapError(err, zb0001, "BuildNumber")
-					return
-				}
-			default:
-				err = dc.Skip()
-				if err != nil {
-					err = msgp.WrapError(err, zb0001)
-					return
-				}
-			}
-		}
-	}
-	return
-}
-
-// EncodeMsg implements msgp.Encodable
-func (z DeviceIndexKeys) EncodeMsg(en *msgp.Writer) (err error) {
-	err = en.WriteArrayHeader(uint32(len(z)))
-	if err != nil {
-		err = msgp.WrapError(err)
-		return
-	}
-	for zb0004 := range z {
-		// map header, size 3
-		// write "manufacturer"
-		err = en.Append(0x83, 0xac, 0x6d, 0x61, 0x6e, 0x75, 0x66, 0x61, 0x63, 0x74, 0x75, 0x72, 0x65, 0x72)
-		if err != nil {
-			return
-		}
-		err = en.WriteString(z[zb0004].Manufacturer)
-		if err != nil {
-			err = msgp.WrapError(err, zb0004, "Manufacturer")
-			return
-		}
-		// write "model"
-		err = en.Append(0xa5, 0x6d, 0x6f, 0x64, 0x65, 0x6c)
-		if err != nil {
-			return
-		}
-		err = en.WriteString(z[zb0004].Model)
-		if err != nil {
-			err = msgp.WrapError(err, zb0004, "Model")
-			return
-		}
-		// write "build_number"
-		err = en.Append(0xac, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x5f, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72)
-		if err != nil {
-			return
-		}
-		err = en.WriteString(z[zb0004].BuildNumber)
-		if err != nil {
-			err = msgp.WrapError(err, zb0004, "BuildNumber")
-			return
-		}
-	}
-	return
-}
-
-// MarshalMsg implements msgp.Marshaler
-func (z DeviceIndexKeys) MarshalMsg(b []byte) (o []byte, err error) {
-	o = msgp.Require(b, z.Msgsize())
-	o = msgp.AppendArrayHeader(o, uint32(len(z)))
-	for zb0004 := range z {
-		// map header, size 3
-		// string "manufacturer"
-		o = append(o, 0x83, 0xac, 0x6d, 0x61, 0x6e, 0x75, 0x66, 0x61, 0x63, 0x74, 0x75, 0x72, 0x65, 0x72)
-		o = msgp.AppendString(o, z[zb0004].Manufacturer)
-		// string "model"
-		o = append(o, 0xa5, 0x6d, 0x6f, 0x64, 0x65, 0x6c)
-		o = msgp.AppendString(o, z[zb0004].Model)
-		// string "build_number"
-		o = append(o, 0xac, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x5f, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72)
-		o = msgp.AppendString(o, z[zb0004].BuildNumber)
-	}
-	return
-}
-
-// UnmarshalMsg implements msgp.Unmarshaler
-func (z *DeviceIndexKeys) UnmarshalMsg(bts []byte) (o []byte, err error) {
-	var zb0002 uint32
-	zb0002, bts, err = msgp.ReadArrayHeaderBytes(bts)
-	if err != nil {
-		err = msgp.WrapError(err)
-		return
-	}
-	if cap((*z)) >= int(zb0002) {
-		(*z) = (*z)[:zb0002]
-	} else {
-		(*z) = make(DeviceIndexKeys, zb0002)
-	}
-	for zb0001 := range *z {
-		var field []byte
-		_ = field
-		var zb0003 uint32
-		zb0003, bts, err = msgp.ReadMapHeaderBytes(bts)
-		if err != nil {
-			err = msgp.WrapError(err, zb0001)
-			return
-		}
-		for zb0003 > 0 {
-			zb0003--
-			field, bts, err = msgp.ReadMapKeyZC(bts)
-			if err != nil {
-				err = msgp.WrapError(err, zb0001)
-				return
-			}
-			switch msgp.UnsafeString(field) {
-			case "manufacturer":
-				(*z)[zb0001].Manufacturer, bts, err = msgp.ReadStringBytes(bts)
-				if err != nil {
-					err = msgp.WrapError(err, zb0001, "Manufacturer")
-					return
-				}
-			case "model":
-				(*z)[zb0001].Model, bts, err = msgp.ReadStringBytes(bts)
-				if err != nil {
-					err = msgp.WrapError(err, zb0001, "Model")
-					return
-				}
-			case "build_number":
-				(*z)[zb0001].BuildNumber, bts, err = msgp.ReadStringBytes(bts)
-				if err != nil {
-					err = msgp.WrapError(err, zb0001, "BuildNumber")
-					return
-				}
-			default:
-				bts, err = msgp.Skip(bts)
-				if err != nil {
-					err = msgp.WrapError(err, zb0001)
-					return
-				}
-			}
-		}
-	}
-	o = bts
-	return
-}
-
-// Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
-func (z DeviceIndexKeys) Msgsize() (s int) {
-	s = msgp.ArrayHeaderSize
-	for zb0004 := range z {
-		s += 1 + 13 + msgp.StringPrefixSize + len(z[zb0004].Manufacturer) + 6 + msgp.StringPrefixSize + len(z[zb0004].Model) + 13 + msgp.StringPrefixSize + len(z[zb0004].BuildNumber)
-	}
 	return
 }

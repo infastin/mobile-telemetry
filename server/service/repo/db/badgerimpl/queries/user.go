@@ -1,40 +1,29 @@
 package queries
 
 import (
+	"slices"
+
 	"github.com/google/uuid"
 )
 
 const UserPrefix = "user"
 
 type UserKey struct {
-	ID        uuid.UUID
-	cachedKey []byte
+	ID uuid.UUID
 }
 
 func NewUserKey(id uuid.UUID) *UserKey {
 	return &UserKey{
-		ID:        id,
-		cachedKey: nil,
+		ID: id,
 	}
 }
 
-func (u *UserKey) Equal(other *UserKey) bool {
-	return u.ID == other.ID
-}
-
-func (u *UserKey) MarshalBinary() (data []byte, err error) {
-	if u.cachedKey != nil {
-		return u.cachedKey, nil
-	}
-
-	data = make([]byte, 0, len(UserPrefix)+1+16)
-	data = append(data, UserPrefix...)
-	data = append(data, ':')
-	data = append(data, u.ID[:]...)
-
-	u.cachedKey = data
-
-	return u.cachedKey, nil
+func (u *UserKey) MarshalKey(b []byte) []byte {
+	b = slices.Grow(b, len(UserPrefix)+1+16)
+	b = append(b, UserPrefix...)
+	b = append(b, ':')
+	b = append(b, u.ID[:]...)
+	return b
 }
 
 func (tx *UpdateTx) InsertUser(key *UserKey) (err error) {
@@ -42,6 +31,5 @@ func (tx *UpdateTx) InsertUser(key *UserKey) (err error) {
 }
 
 func insertUser(tx writeTx, key *UserKey) (err error) {
-	keyb, _ := key.MarshalBinary()
-	return tx.Set(keyb, nil)
+	return tx.Set(key.MarshalKey(nil), nil)
 }

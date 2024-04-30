@@ -3,6 +3,7 @@ package queries
 import (
 	"encoding/binary"
 	"mobile-telemetry/pkg/fastconv"
+	"slices"
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
@@ -16,34 +17,21 @@ import (
 const TelemetryPrefix = "telemetry"
 
 type TelemetryKey struct {
-	ID        uint64
-	cachedKey []byte
+	ID uint64
 }
 
 func NewTelemetryKey(id uint64) *TelemetryKey {
 	return &TelemetryKey{
-		ID:        id,
-		cachedKey: nil,
+		ID: id,
 	}
 }
 
-func (t *TelemetryKey) Equal(other *TelemetryKey) bool {
-	return t.ID == other.ID
-}
-
-func (t *TelemetryKey) MarshalBinary() (data []byte, err error) {
-	if t.cachedKey != nil {
-		return t.cachedKey, nil
-	}
-
-	data = make([]byte, 0, len(TelemetryPrefix)+1+8)
-	data = append(data, fastconv.Bytes(TelemetryPrefix)...)
-	data = append(data, ':')
-	data = binary.BigEndian.AppendUint64(data, t.ID)
-
-	t.cachedKey = data
-
-	return t.cachedKey, nil
+func (t *TelemetryKey) MarshalKey(b []byte) []byte {
+	b = slices.Grow(b, len(TelemetryPrefix)+1+8)
+	b = append(b, fastconv.Bytes(TelemetryPrefix)...)
+	b = append(b, ':')
+	b = binary.BigEndian.AppendUint64(b, t.ID)
+	return b
 }
 
 type TelemetryValueV1 struct {
@@ -70,7 +58,7 @@ func insertTelemetry(tx writeTx, seq *badger.Sequence, val *TelemetryValueV1) (i
 		return 0, err
 	}
 
-	keyb, _ := NewTelemetryKey(id).MarshalBinary()
+	keyb := NewTelemetryKey(id).MarshalKey(nil)
 	valb, _ := val.MarshalMsg(nil)
 
 	err = tx.Set(keyb, valb)
