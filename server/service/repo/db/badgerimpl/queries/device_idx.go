@@ -68,10 +68,6 @@ func (d *DeviceIndexKey) MarshalPrefix(b []byte) []byte {
 	return b
 }
 
-func (d *DeviceIndexKey) AppendIDToPrefix(b []byte) []byte {
-	return binary.BigEndian.AppendUint64(b, d.ID)
-}
-
 type DeviceIndexValue struct {
 	Manufacturer string `msg:"manufacturer"`
 	Model        string `msg:"model"`

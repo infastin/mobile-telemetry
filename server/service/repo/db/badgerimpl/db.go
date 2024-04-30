@@ -31,8 +31,10 @@ type Config struct {
 }
 
 func New(lc fx.Lifecycle, cfg Config) (database.Repo, error) {
-	db, err := badger.Open(badger.DefaultOptions(cfg.Directory).
-		WithLogger(cfg.BadgerLogger))
+	opts := badger.DefaultOptions(cfg.Directory).
+		WithLogger(cfg.BadgerLogger)
+
+	db, err := badger.Open(opts)
 	if err != nil {
 		return nil, err
 	}
