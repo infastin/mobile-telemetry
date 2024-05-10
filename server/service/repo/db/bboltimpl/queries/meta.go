@@ -13,6 +13,10 @@ package queries
 // NOTE: Since versions starts from 1, the maximum version is 16.
 type Meta byte
 
+func (m Meta) Append(b []byte) []byte {
+	return append(b, byte(m))
+}
+
 func (m Meta) Version() int {
 	return int(m&0xF) + 1
 }

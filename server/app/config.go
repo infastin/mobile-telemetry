@@ -50,12 +50,12 @@ func (cfg LoggerConfig) Validate() error {
 type DatabaseConfig struct {
 	fx.Out
 
-	Directory string `env:"DIRECTORY" yaml:"directory" name:"db_directory"`
+	Path string `env:"PATH" yaml:"path" name:"db_path"`
 }
 
 func (cfg DatabaseConfig) Validate() error {
 	return validation.All(
-		validation.String(cfg.Directory, "directory").Required(true),
+		validation.String(cfg.Path, "path").Required(true),
 	)
 }
 

@@ -2,11 +2,9 @@ package queries
 
 import (
 	"encoding/binary"
-	"mobile-telemetry/pkg/fastconv"
 	"slices"
 	"time"
 
-	"github.com/dgraph-io/badger/v4"
 	"github.com/google/uuid"
 )
 
@@ -14,7 +12,7 @@ import (
 //msgp:replace uuid.UUID with:[16]byte
 //msgp:ignore TelemetryKey
 
-const TelemetryPrefix = "telemetry"
+var TelemetryBucketName = []byte("telemetry")
 
 type TelemetryKey struct {
 	ID uint64
@@ -27,9 +25,7 @@ func NewTelemetryKey(id uint64) *TelemetryKey {
 }
 
 func (t *TelemetryKey) MarshalKey(b []byte) []byte {
-	b = slices.Grow(b, len(TelemetryPrefix)+1+8)
-	b = append(b, fastconv.Bytes(TelemetryPrefix)...)
-	b = append(b, ':')
+	b = slices.Grow(b, 8)
 	b = binary.BigEndian.AppendUint64(b, t.ID)
 	return b
 }
@@ -44,24 +40,20 @@ type TelemetryValueV1 struct {
 	Timestamp  time.Time      `msg:"timestamp"`
 }
 
-func (tx *UpdateTx) InsertTelemetry(val *TelemetryValueV1) (id uint64, err error) {
-	return insertTelemetry(tx, tx.queries.telemetrySeq, val)
-}
+func (queries *Queries) InsertTelemetry(val *TelemetryValueV1) (id uint64, err error) {
+	b := queries.tx.Bucket(TelemetryBucketName)
 
-func (tx *BatchWriteTx) InsertTelemetry(val *TelemetryValueV1) (id uint64, err error) {
-	return insertTelemetry(tx, tx.queries.telemetrySeq, val)
-}
-
-func insertTelemetry(tx writeTx, seq *badger.Sequence, val *TelemetryValueV1) (id uint64, err error) {
-	id, err = seq.Next()
+	id, err = b.NextSequence()
 	if err != nil {
 		return 0, err
 	}
 
 	keyb := NewTelemetryKey(id).MarshalKey(nil)
-	valb, _ := val.MarshalMsg(nil)
 
-	err = tx.Set(keyb, valb)
+	valb := Meta(0).Append(nil)
+	valb, _ = val.MarshalMsg(valb)
+
+	err = b.Put(keyb, valb)
 	if err != nil {
 		return 0, err
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 type Telemetry struct {
-	UserUID    uuid.UUID
+	UserID     uuid.UUID
 	DeviceID   int
 	OSVersion  string
 	AppVersion string

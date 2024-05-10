@@ -3,15 +3,10 @@ package impl
 import (
 	"context"
 	"mobile-telemetry/server/service/model"
-	"mobile-telemetry/server/service/repo/db/badgerimpl/queries"
-
-	"github.com/dgraph-io/badger/v4"
+	"mobile-telemetry/server/service/repo/db/bboltimpl/queries"
 )
 
 func (db *dbRepo) AddDeviceIfNotExists(ctx context.Context, device *model.Device) (id int, err error) {
-	tx := db.queries.Update()
-	defer tx.Discard()
-
 	devIdxKey := queries.NewDeviceIndexKey(device.Manufacturer, device.Model, device.BuildNumber)
 	devIdxVal := &queries.DeviceIndexValue{
 		Manufacturer: device.Manufacturer,
@@ -19,18 +14,18 @@ func (db *dbRepo) AddDeviceIfNotExists(ctx context.Context, device *model.Device
 		BuildNumber:  device.BuildNumber,
 	}
 
-	devID, err := tx.FindDeviceIndex(devIdxKey, devIdxVal)
-	if err != nil && err != badger.ErrKeyNotFound {
+	devID, err := db.queries.FindDeviceIndex(devIdxKey, devIdxVal)
+	if err != nil && err != queries.ErrKeyNotFound {
 		return 0, err
 	}
 
-	if err == badger.ErrKeyNotFound {
-		devID, err = tx.InsertDeviceIndex(devIdxKey, devIdxVal)
+	if err == queries.ErrKeyNotFound {
+		devID, err = db.queries.InsertDeviceIndex(devIdxKey, devIdxVal)
 		if err != nil {
 			return 0, err
 		}
 
-		if err := tx.InsertDevice(queries.NewDeviceKey(devID), &queries.DeviceValueV1{
+		if err := db.queries.InsertDevice(queries.NewDeviceKey(devID), &queries.DeviceValueV1{
 			Manufacturer: device.Manufacturer,
 			Model:        device.Model,
 			BuildNumber:  device.BuildNumber,
@@ -42,12 +37,7 @@ func (db *dbRepo) AddDeviceIfNotExists(ctx context.Context, device *model.Device
 		}
 	}
 
-	err = tx.InsertUserDevice(queries.NewUserDeviceKey(device.UserID, devID))
-	if err != nil {
-		return 0, err
-	}
-
-	err = tx.Commit()
+	err = db.queries.InsertUserDevice(queries.NewUserDeviceKey(device.UserID, devID))
 	if err != nil {
 		return 0, err
 	}

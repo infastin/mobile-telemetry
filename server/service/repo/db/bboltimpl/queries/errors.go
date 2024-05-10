@@ -7,29 +7,8 @@ import (
 )
 
 var (
-	ErrKeyExists = errors.New("key exists")
+	ErrKeyNotFound = errors.New("key not found")
 )
-
-type InvalidKeyPrefix struct {
-	expected string
-	got      string
-}
-
-func NewInvalidKeyPrefix(expected, got string) error {
-	return &InvalidKeyPrefix{
-		expected: expected,
-		got:      got,
-	}
-}
-
-func (e *InvalidKeyPrefix) Error() string {
-	var b strings.Builder
-	b.WriteString("invalid key prefix: expected ")
-	b.WriteString(strconv.Quote(e.expected))
-	b.WriteString(", got ")
-	b.WriteString(strconv.Quote(e.got))
-	return b.String()
-}
 
 type InvalidKeySizeError struct {
 	expected int

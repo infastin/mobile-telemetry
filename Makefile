@@ -1,5 +1,6 @@
 BUILD_DIR=build
-MSGP_DIR=server/service/repo/db/badgerimpl/queries
+MSGP_DIR=server/service/repo/db/bboltimpl/queries
+SQLC_DIR=server/service/repo/db/sqliteimpl/sqlc
 MODULE=mobile-telemetry
 
 deps:
@@ -22,3 +23,7 @@ lint:
 msgp:
 	go generate ./$(MSGP_DIR)
 .PHONY: msgp
+
+sqlc:
+	cd $(SQLC_DIR) && sqlc generate
+.PHONY: sqlc

@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const UserDevicePrefix = "user_device"
+var UserDeviceBucketName = []byte("user_device")
 
 type UserDeviceKey struct {
 	UserID   uuid.UUID
@@ -22,19 +22,17 @@ func NewUserDeviceKey(userID uuid.UUID, deviceID uint64) *UserDeviceKey {
 }
 
 func (ud *UserDeviceKey) MarshalKey(b []byte) []byte {
-	b = slices.Grow(b, len(UserDevicePrefix)+1+16+1+8)
-	b = append(b, UserDevicePrefix...)
-	b = append(b, ':')
+	b = slices.Grow(b, 16+8)
 	b = append(b, ud.UserID[:]...)
-	b = append(b, ':')
 	b = binary.BigEndian.AppendUint64(b, ud.DeviceID)
 	return b
 }
 
-func (tx *UpdateTx) InsertUserDevice(key *UserDeviceKey) (err error) {
-	return insertUserDevice(tx, key)
-}
+func (queries *Queries) InsertUserDevice(key *UserDeviceKey) (err error) {
+	b := queries.tx.Bucket(UserDeviceBucketName)
 
-func insertUserDevice(tx writeTx, key *UserDeviceKey) (err error) {
-	return tx.Set(key.MarshalKey(nil), nil)
+	keyb := key.MarshalKey(nil)
+	valb := Meta(0).Append(nil)
+
+	return b.Put(keyb, valb)
 }

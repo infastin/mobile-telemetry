@@ -5,7 +5,7 @@ debug:
     max_size: 10
     max_age: 30
   database:
-    directory: data/badger/
+    path: data/bbolt/telemetry.db
   http:
     port: 8080
 
@@ -16,6 +16,6 @@ release:
     max_size: 10
     max_age: 30
   database:
-    directory: data/badger/
+    path: data/bbolt/telemetry.db
   http:
     port: 8080

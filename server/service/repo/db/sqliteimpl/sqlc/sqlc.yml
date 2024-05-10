@@ -1,0 +1,19 @@
+version: 2
+sql:
+  - engine: sqlite
+    queries: ./queries
+    schema:  ./schema
+    gen:
+      go:
+        package: sqlc
+        out: .
+        emit_prepared_queries: true
+        overrides:
+          - column: users.id
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - column: "*.user_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
